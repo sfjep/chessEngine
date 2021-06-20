@@ -1,4 +1,4 @@
-from Chess.pieces.piece import Piece
+from chess.pieces.piece import Piece
 
 class Pawn(Piece):
     def __init__(self, bb, color):
@@ -8,4 +8,6 @@ class Pawn(Piece):
     # One step forward
     # Captures
     # Promotion
-    
+
+    def getMovesLookupDict(self):
+        pass

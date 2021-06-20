@@ -1,4 +1,4 @@
-import Chess
+import chess
 
 class State:
 
@@ -16,9 +16,9 @@ class State:
         self.black_king_checkmate = False
         self.pawn_two_step_last_move = False # Which pawn though, we need BB.
         
-        self.fenList = [Chess.STARTING_BOARD_FEN]
+        self.fenList = [chess.STARTING_BOARD_FEN]
  
-        self.occupied = Chess.BB_RANK_1 | Chess.BB_RANK_2 | Chess.BB_RANK_7 | Chess.BB_RANK_8
+        self.occupied = chess.BB_RANK_1 | chess.BB_RANK_2 | chess.BB_RANK_7 | chess.BB_RANK_8
 
     
     
