@@ -1,3 +1,5 @@
+from Chess.pieces.piece import Piece
 
-class Bishop:
-    pass
+class Bishop(Piece):
+    def __init__(self, bb, color):
+        super().__init__(bb, color)

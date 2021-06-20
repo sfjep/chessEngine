@@ -2,7 +2,7 @@
 # for notation purposes
 FILE_NAMES = ["a", "b", "c", "d", "e", "f", "g", "h"]
 RANK_NAMES = ["1", "2", "3", "4", "5", "6", "7", "8"]
-SQUARE_NAMES = [f + r for r in RANK_NAMES for f in FILE_NAMES]
+SQUARE_NAMES = [file + rank for rank in RANK_NAMES for file in FILE_NAMES]
 
 Color = bool
 COLORS = [WHITE, BLACK] = [True, False]
@@ -47,7 +47,7 @@ BB_SQUARES = [
     BB_A6, BB_B6, BB_C6, BB_D6, BB_E6, BB_F6, BB_G6, BB_H6,
     BB_A7, BB_B7, BB_C7, BB_D7, BB_E7, BB_F7, BB_G7, BB_H7,
     BB_A8, BB_B8, BB_C8, BB_D8, BB_E8, BB_F8, BB_G8, BB_H8,
-] = [1 << sq for sq in SQUARES]
+] = [1 << square for square in SQUARES]
 
 BB_LIGHT_SQUARES = 0x55aa_55aa_55aa_55aa
 BB_DARK_SQUARES = 0xaa55_aa55_aa55_aa55

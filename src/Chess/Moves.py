@@ -4,7 +4,6 @@ class Move:
     pass
 
 
-
 def move_down(b: Chess.Bitboard) -> Chess.Bitboard:
     return b >> 8
 
