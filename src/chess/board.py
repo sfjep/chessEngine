@@ -1,5 +1,6 @@
 import chess
 import chess.pieces as Pieces
+from chess import Bitboard
 
 class Board:
 
@@ -19,4 +20,12 @@ class Board:
         self.BQ = Pieces.Queen(chess.BB_D8, chess.COLORS[1])
         self.BK = Pieces.King(chess.BB_E8, chess.COLORS[1])
 
-
+    @staticmethod
+    def piece_squares(bb_pieces: 'Bitboard'):
+        """
+        Generates 1 bit bitboards from the decomposition of a bitboard
+        """
+        while bb_pieces != 0:
+            most_sig_bit = 2**(bb_pieces.bit_length()-1)
+            yield most_sig_bit
+            bb_pieces ^= most_sig_bit

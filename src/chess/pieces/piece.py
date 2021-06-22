@@ -7,6 +7,6 @@ class Piece(ABC):
         self.color = color
     
     @abstractmethod
-    def getMovesLookupDict(self):
+    def generate_move_lookup(self):
         pass
     

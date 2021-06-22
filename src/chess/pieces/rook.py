@@ -5,9 +5,9 @@ from chess import utils
 class Rook(Piece):
     def __init__(self, bb, color):
         super().__init__(bb, color)
-        self.getMovesLookupDict()
+        self.generate_move_lookup()
 
-    def getMovesLookupDict(self):
+    def generate_move_lookup(self):
         self.moves_lookup = {}
 
         for square in chess.SQUARES:

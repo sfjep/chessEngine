@@ -9,5 +9,5 @@ class Pawn(Piece):
     # Captures
     # Promotion
 
-    def getMovesLookupDict(self):
+    def generate_move_lookup(self):
         pass
