@@ -21,7 +21,7 @@ class Board:
         self.BK = Pieces.King(chess.BB_E8, chess.COLORS[1])
 
     @staticmethod
-    def piece_squares(bb_pieces: 'Bitboard'):
+    def piece_squares(bb_pieces: Bitboard):
         """
         Generates 1 bit bitboards from the decomposition of a bitboard
         """
