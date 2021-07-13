@@ -61,5 +61,3 @@ class Moves:
 
     def move_2_right_1_down(b: chess.Bitboard) -> chess.Bitboard:
         return Moves.move_2_right(Moves.move_down(b))
-    
-    
