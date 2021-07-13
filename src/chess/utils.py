@@ -9,7 +9,7 @@ def getBinaryFromBitboard(bb: int) -> str:
     return '{:064b}'.format(bb)
 
 
-def printBitboard(bb: int):
+def print_bitboard(bb: int):
     print('\n'.join([' '.join(wrap(line[::-1], 1)) for line in wrap(getBinaryFromBitboard(bb), 8)]))
 
 

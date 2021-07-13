@@ -1,10 +1,9 @@
 from chess.board import Board
-from chess.utils import printBitboard
+from chess.utils import print_bitboard
+from chess.pieces.knight import Knight
+import chess
 
 if __name__ == '__main__':
-    board = Board()
-    test = [bb for bb in Board.piece_squares(board.BB.bb)]
-    for bb in test:
-        printBitboard(bb)
+    for square in chess.SQUARES:
+        print_bitboard(Knight.moves_lookup[square])
         print("")
-    print("Hello")
