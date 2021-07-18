@@ -17,7 +17,7 @@ class State:
         self.black_king_checkmate = False
         self.pawn_two_step_last_move = False # Which pawn though, we need BB.
         
-        self.fenList = [chess.STARTING_BOARD_FEN]
+        self.fen_list = [chess.STARTING_BOARD_FEN]
  
         self.occupied = [WHITE_OCCUPIED, BLACK_OCCUPIED] = [chess.BB_RANK_1 | chess.BB_RANK_2, chess.BB_RANK_7 | chess.BB_RANK_8]
 

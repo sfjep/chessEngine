@@ -12,5 +12,5 @@ class Rook(Piece):
 
         for square in chess.SQUARES:
             newLocation = 1 << square
-            self.moves_lookup[square] = (utils.getRankFromBB(newLocation) | utils.getFileFromBB(newLocation)) & ~newLocation
+            self.moves_lookup[square] = (utils.get_rank_from_bb(newLocation) | utils.get_file_from_bb(newLocation)) & ~newLocation
         
