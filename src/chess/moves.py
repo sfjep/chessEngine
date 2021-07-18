@@ -38,6 +38,31 @@ class Moves:
     def move_down_right(b: chess.Bitboard) -> chess.Bitboard:
         return (b >> 7) & ~chess.BB_FILE_A & chess.BB_ALL
 
+    def move_up_left_diagonal(b: chess.Bitboard) -> chess.Bitboard:
+        diag = 0
+        while (b := Moves.move_up_left(b)) != 0 :
+            diag |= b
+        return diag
+
+    def move_up_right_diagonal(b: chess.Bitboard) -> chess.Bitboard:
+        diag = 0
+        while (b := Moves.move_up_right(b)) != 0 :
+            diag |= b
+        return diag
+
+    def move_down_left_diagonal(b: chess.Bitboard) -> chess.Bitboard:
+        diag = 0
+        while (b := Moves.move_down_left(b)) != 0 :
+            diag |= b
+        return diag
+
+    def move_down_right_diagonal(b: chess.Bitboard) -> chess.Bitboard:
+        diag = 0
+        while (b := Moves.move_down_right(b)) != 0 :
+            diag |= b
+        return diag
+
+            
     def move_2_up_1_left(b: chess.Bitboard) -> chess.Bitboard:
         return Moves.move_2_up(Moves.move_left(b))
     
