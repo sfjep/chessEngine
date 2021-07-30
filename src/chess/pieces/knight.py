@@ -1,12 +1,12 @@
 from typing import Dict
-from chess import moves_lookup
 from chess.moves import Moves
 from chess.pieces.piece import Piece
 import chess
+from chess.utils import get_individual_ones_in_bb, get_square_int_from_bb
 
 class Knight(Piece):
-    def __init__(self, bb, color):
-        super().__init__(bb, color)
+    def __init__(self, bb, color, piece_type):
+        super().__init__(bb, color, piece_type)
 
     def generate_move_lookup() -> Dict[chess.Square, chess.Bitboard]:
         moves_lookup = {}        
@@ -25,7 +25,21 @@ class Knight(Piece):
         
         return moves_lookup
     
-    moves_lookup = generate_move_lookup()
+    MOVES_LOOKUP = generate_move_lookup()
+
+    def get_moves(self, opponent_occupied: chess.Bitboard, player_occupied: chess.Bitboard):
+        knight_actions = {}
+        attack_actions = {}
+        for current_piece_position in get_individual_ones_in_bb(self.bb):
+            sq = get_square_int_from_bb(current_piece_position)
+            target_moves = self.moves_lookup[sq] & ~player_occupied
+            attack_moves = self.moves_lookup[sq] & ~player_occupied & opponent_occupied
+
+            knight_actions[current_piece_position] = target_moves
+            attack_actions[current_piece_position] = attack_moves
+
+        return knight_actions, attack_actions
+
 
                 
     

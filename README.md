@@ -20,3 +20,5 @@ Convert FEN to bitboards
 FEN to pretty board
 
 Agent
+
+- Move piece from A to B and update states

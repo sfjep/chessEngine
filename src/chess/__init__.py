@@ -12,14 +12,15 @@ PieceType = int
 PIECE_TYPES = [PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING] = range(1, 7)
 PIECE_SYMBOLS = [None, "p", "n", "b", "r", "q", "k"]
 
+
 # NO CLUE HOW WE USE THIS, BUT IT LOOKS COOL
 UNICODE_PIECE_SYMBOLS = {
-    "R": "♖", "r": "♜",
-    "N": "♘", "n": "♞",
-    "B": "♗", "b": "♝",
-    "Q": "♕", "q": "♛",
-    "K": "♔", "k": "♚",
-    "P": "♙", "p": "♟",
+    "r": "♖", "R": "♜",
+    "n": "♘", "N": "♞",
+    "b": "♗", "B": "♝",
+    "q": "♕", "Q": "♛",
+    "k": "♔", "K": "♚",
+    "p": "♙", "P": "♟",
 }
 
 Square = int
@@ -83,3 +84,4 @@ BB_BACKRANKS = BB_RANK_1 | BB_RANK_8
 
 STARTING_BOARD_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
 """The board part of the FEN for the standard chess starting position."""
+

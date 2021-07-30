@@ -1,13 +1,13 @@
 from typing import Dict, Tuple
-from chess import moves_lookup
 from chess.pieces.piece import Piece
 import chess
 from chess.moves import Moves
+from chess.utils import get_individual_ones_in_bb, get_square_int_from_bb
 
 class King(Piece):
 
-    def __init__(self, bb, color):
-        super().__init__(bb, color)
+    def __init__(self, bb, color, piece_type):
+        super().__init__(bb, color, piece_type)
 
     def generate_move_lookup() -> Dict[Tuple[chess.Square, chess.Color], chess.Bitboard]:
         moves_lookup = {}
@@ -36,6 +36,20 @@ class King(Piece):
         return moves_lookup
 
     moves_lookup = generate_move_lookup()
+
+    def get_moves(self, opponent_occupied: chess.Bitboard, player_occupied: chess.Bitboard):
+        king_actions = {}
+        attack_actions = {}
+        for current_piece_position in get_individual_ones_in_bb(self.bb):
+            sq = get_square_int_from_bb(current_piece_position)
+            target_moves = self.moves_lookup[sq] & ~player_occupied
+            attack_moves = self.moves_lookup[sq] & ~player_occupied & opponent_occupied
+
+            king_actions[current_piece_position] = target_moves
+            attack_actions[current_piece_position] = attack_moves
+
+        return king_actions, attack_actions
+
 
 '''
 In check?
