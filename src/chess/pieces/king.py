@@ -39,13 +39,16 @@ class King(Piece):
     moves_lookup = generate_move_lookup()
 
     def get_moves(self, opponent_occupied: chess.Bitboard, player_occupied: chess.Bitboard):
+        king_actions = []
+        attack_actions = []
+        
         for current_piece_position in get_individual_ones_in_bb(self.bb):
             sq = get_square_int_from_bb(current_piece_position)
             target_moves = self.moves_lookup[sq] & ~player_occupied
             attack_moves = self.moves_lookup[sq] & ~player_occupied & opponent_occupied
 
-            king_actions = Action.generate_actions(target_moves, chess.KING, current_piece_position)
-            attack_actions = Action.generate_actions(attack_moves, chess.KING, current_piece_position)
+            king_actions += Action.generate_actions(target_moves, chess.KING, current_piece_position)
+            attack_actions += Action.generate_actions(attack_moves, chess.KING, current_piece_position)
 
         return king_actions, attack_actions
 

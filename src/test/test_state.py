@@ -1,6 +1,7 @@
 import unittest
 import src.chess as chess
 from src.chess.state import State
+from src.chess.fen import Fen
 
 class StateTest(unittest.TestCase):
     
@@ -34,7 +35,7 @@ class StateTest(unittest.TestCase):
 
     def test_get_fen_from_state_1(self):
         state = State("rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq e3 1 2")
-        fen = state.get_fen_from_state()
+        fen = Fen.get_fen_from_state(state)
         print(fen)
         self.assertEqual(
            fen,
@@ -43,7 +44,7 @@ class StateTest(unittest.TestCase):
 
     def test_get_fen_from_state_2(self):
         state = State("rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R w - - 0 1")
-        fen = state.get_fen_from_state()
+        fen = Fen.get_fen_from_state(state)
         self.assertEqual(
            fen,
            "rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R w - - 0 1" 

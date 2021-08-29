@@ -1,14 +1,8 @@
-import numpy as np
 import chess
 from chess.board import Board
 from dataclasses import dataclass
 from typing import Optional
-from chess.utils import (
-    get_individual_ones_in_bb,
-    get_square_int_from_bb
-)
-from chess.action import Action
-from chess.fen import Fen
+
 
 @dataclass
 class State:

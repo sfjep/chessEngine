@@ -1,8 +1,7 @@
 import numpy as np
 
 import chess
-from chess.board import Board
-from state import State
+from chess.state import State
 
 class Fen:
     

@@ -1,4 +1,3 @@
-from chess.state import State
 import chess
 from chess.utils import get_individual_ones_in_bb, get_square_int_from_bb
 

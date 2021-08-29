@@ -40,6 +40,9 @@ class Pawn(Piece):
     move_lookup = generate_move_lookup()
 
     def get_moves(self, color: bool, opponent_occupied: chess.Bitboard, player_occupied: chess.Bitboard, en_passant_bb: chess.Bitboard):
+        pawn_actions = []
+        attack_actions = []
+
         for current_piece_position in get_individual_ones_in_bb(self.bb):
             attack_mask = self.diag_moves(current_piece_position, color) & (opponent_occupied | en_passant_bb)
             target_squares = attack_mask
@@ -51,8 +54,8 @@ class Pawn(Piece):
                     if move_2_up:
                         target_squares |= move_2_up
 
-            pawn_actions = Action.generate_actions(target_squares, chess.PAWN, current_piece_position)
-            attack_actions = Action.generate_actions(attack_mask, chess.PAWN, current_piece_position)
+            pawn_actions += Action.generate_actions(target_squares, chess.PAWN, current_piece_position)
+            attack_actions += Action.generate_actions(attack_mask, chess.PAWN, current_piece_position)
 
         return pawn_actions, attack_actions
 
