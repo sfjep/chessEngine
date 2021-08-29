@@ -1,6 +1,8 @@
+import numpy as np
 import chess
 import chess.pieces as Pieces
 from chess import Bitboard
+from chess.utils import get_individual_ones_in_bb, get_square_int_from_bb
 
 class Board:
 
@@ -87,6 +89,22 @@ class Board:
             yield most_sig_bit
             bb_pieces ^= most_sig_bit
 
+    @staticmethod
+    def get_board_arr_from_board_obj(board):
+        board_arr = np.full([8,8], ' ', dtype=str)
+        for piece in board.pieces:
+            for bb in get_individual_ones_in_bb(piece.bb):
+                idx = get_square_int_from_bb(bb)
+                if piece.color == chess.WHITE:
+                    board_arr[idx // 8, idx % 8] = chess.UNICODE_CHAR_TO_SYMBOL[chess.PIECE_SYMBOLS[piece.piece_type].upper()]
+                else:
+                    board_arr[idx // 8, idx % 8] = chess.UNICODE_CHAR_TO_SYMBOL[chess.PIECE_SYMBOLS[piece.piece_type].lower()]
+        return board_arr
+    
+    @classmethod
+    def print_board_from_board_obj(cls, board):
+        board_arr = np.flip(cls.get_board_arr_from_board_obj(board), axis=0)
+        print(repr(board_arr))
 
 class InvalidFenException(Exception):
     pass

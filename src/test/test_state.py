@@ -32,7 +32,22 @@ class StateTest(unittest.TestCase):
         self.assertEqual(state.halfmove_count, 12)
         self.assertEqual(state.move_count, 24)
 
+    def test_get_fen_from_state_1(self):
+        state = State("rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq e3 1 2")
+        fen = state.get_fen_from_state()
+        print(fen)
+        self.assertEqual(
+           fen,
+           "rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq e3 1 2" 
+        )
 
+    def test_get_fen_from_state_2(self):
+        state = State("rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R w - - 0 1")
+        fen = state.get_fen_from_state()
+        self.assertEqual(
+           fen,
+           "rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R w - - 0 1" 
+        )
 
 if __name__ == '__main__':
     unittest.main()

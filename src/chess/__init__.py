@@ -13,14 +13,21 @@ PIECE_TYPES = [PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING] = range(1, 7)
 PIECE_SYMBOLS = [None, "p", "n", "b", "r", "q", "k"]
 
 
-# NO CLUE HOW WE USE THIS, BUT IT LOOKS COOL
-UNICODE_PIECE_SYMBOLS = {
+UNICODE_CHAR_TO_SYMBOL = {
     "r": "♖", "R": "♜",
     "n": "♘", "N": "♞",
     "b": "♗", "B": "♝",
     "q": "♕", "Q": "♛",
     "k": "♔", "K": "♚",
     "p": "♙", "P": "♟",
+}
+UNICODE_SYMBOL_TO_CHAR = {
+    "♖": "r", "♜": "R",
+    "♘": "n", "♞": "N",
+    "♗": "b", "♝": "B",
+    "♕": "q", "♛": "Q",
+    "♔": "k", "♚": "K",
+    "♙": "p", "♟": "P",
 }
 
 Square = int

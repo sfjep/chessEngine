@@ -1,3 +1,4 @@
+import numpy as np
 import chess
 from chess.board import Board
 from dataclasses import dataclass
@@ -48,6 +49,47 @@ class State:
         self.move_count = 0
         # self.fen_list = [chess.STARTING_BOARD_FEN]
 
+    def get_fen_from_state(self):
+        fen = self._get_board_fen() + " "
+        fen += self._get_turn_fen() + " "
+        fen += self._get_castling_fen() + " "
+        fen += self._get_en_passant_fen() + " "
+        fen += self._get_halfmove_count_fen() + " "
+        fen += self._get_move_count_fen()
+        return fen
+
+    def _get_turn_fen(self):
+        if self.turn:
+            return "w"
+        else:
+            return "b"
+
+    def _get_castling_fen(self):
+        fen = ''
+        if self.white_can_castle_kingside:
+            fen += "K"
+        if self.white_can_castle_queenside:
+            fen += "Q"
+        if self.black_can_castle_kingside:
+            fen += "k"
+        if self.black_can_castle_queenside:
+            fen += "q"
+        if len(fen) == 0:
+            fen += "-"
+        return fen      
+
+    def _get_en_passant_fen(self):
+        if self.en_passant_capture_square == chess.BB_EMPTY:
+            return "-"
+        else:
+            return chess.SQUARE_NAMES[chess.BB_SQUARES.index(self.en_passant_capture_square)]
+
+    def _get_halfmove_count_fen(self):
+        return str(self.halfmove_count)
+    
+    def _get_move_count_fen(self):
+        return str(self.move_count)
+
     def get_state_from_fen(self, fen: str):
         fields = fen.split()
         fen_board = fields[0]
@@ -72,22 +114,24 @@ class State:
 
         self.halfmove_count = int(halfmove_clock)
         self.move_count = int(fullmove_number)
-       
-    
-    
-    def get_actions(self):
 
-        # if self.turn == chess.WHITE:
-
-        return
-
-    def choose_action(self):
-        a = "smart stuff" # Smart shit happens here
-        return a
-
-    # def apply_action(self, a: Action):
-    #     # Copy self
-    #     s = copy(self)
-    #     #modify s
-    #     s.parent = self
-    #     return s
+    def _get_board_fen(self):
+        board_arr = np.flip(self.board.get_board_arr_from_board_obj(self.board), axis=0)
+        fen = ''
+        for i in range(board_arr.shape[0]):
+            empty_count = 0
+            for j in range(board_arr.shape[1]):
+                if board_arr[i, j] == ' ':
+                    empty_count += 1
+                else:
+                    if empty_count == 0:
+                        fen += chess.UNICODE_SYMBOL_TO_CHAR[board_arr[i, j]]
+                    else:
+                        fen += str(empty_count)
+                        fen += chess.UNICODE_SYMBOL_TO_CHAR[board_arr[i, j]]
+                        empty_count = 0
+            if empty_count != 0:
+                fen += str(empty_count)
+            if i != (board_arr.shape[0] - 1):
+                fen += "/"
+        return fen

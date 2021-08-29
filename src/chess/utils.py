@@ -4,7 +4,6 @@ Missing utils:
 - BBs TO FEN
 - FEN to pretty board
 """
-import numpy as np
 import chess
 from textwrap import wrap
 
@@ -51,21 +50,3 @@ def get_individual_ones_in_bb(bb_pieces: chess.Bitboard):
         most_sig_bit = 2**(bb_pieces.bit_length()-1)
         yield most_sig_bit
         bb_pieces ^= most_sig_bit
-
-def get_board_from_board_obj(board):
-    board_arr = np.full([8,8], ' ', dtype=str)
-    for piece in board.pieces:
-        for bb in get_individual_ones_in_bb(piece.bb):
-            idx = get_square_int_from_bb(bb)
-            if piece.color == chess.WHITE:
-                board_arr[idx // 8, idx % 8] = chess.UNICODE_PIECE_SYMBOLS[chess.PIECE_SYMBOLS[piece.piece_type].upper()]
-            else:
-                board_arr[idx // 8, idx % 8] = chess.UNICODE_PIECE_SYMBOLS[chess.PIECE_SYMBOLS[piece.piece_type].lower()]
-    return board_arr
-
-def print_board_from_board_obj(board):
-    board_arr = np.flip(get_board_from_board_obj(board), axis=0)
-    print(repr(board_arr))
-
-def board_to_fen(board):
-    pass
