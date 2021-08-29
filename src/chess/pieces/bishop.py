@@ -3,7 +3,8 @@ import chess
 from chess.moves import Moves
 from chess.pieces.piece import Piece
 import chess
-from chess.utils import get_individual_ones_in_bb
+from chess.utils import get_individual_ones_in_bb, get_square_int_from_bb
+from chess.action import Action
 
 class Bishop(Piece):
     def __init__(self, bb, color, piece_type):
@@ -25,8 +26,6 @@ class Bishop(Piece):
     moves_lookup = generate_move_lookup()
 
     def get_moves(self, opponent_occupied: chess.Bitboard, player_occupied: chess.Bitboard):
-        bishop_actions = {}
-        attack_actions = {}
         for current_piece_position in get_individual_ones_in_bb(self.bb):
             target_moves = chess.BB_EMPTY
             attack_moves = chess.BB_EMPTY
@@ -50,8 +49,8 @@ class Bishop(Piece):
                         if target_moves & opponent_occupied:
                             attack_moves |= next_square
                             continue_in_direction = False
-
-            bishop_actions[current_piece_position] = target_moves
-            attack_actions[current_piece_position] = attack_moves
+            
+            bishop_actions = Action.generate_actions(target_moves, chess.BISHOP, current_piece_position)
+            attack_actions = Action.generate_actions(attack_moves, chess.BISHOP, current_piece_position)
 
         return bishop_actions, attack_actions

@@ -3,7 +3,7 @@ import chess
 from chess.moves import Moves
 from chess.pieces.piece import Piece
 from chess.utils import get_rank_from_bb, get_file_from_bb, get_individual_ones_in_bb, get_square_int_from_bb
-
+from chess.action import Action
 
 class Queen(Piece):
     def __init__(self, bb, color, piece_type):
@@ -26,8 +26,6 @@ class Queen(Piece):
     MOVES_LOOKUP = generate_move_lookup()
 
     def get_moves(self, opponent_occupied: chess.Bitboard, player_occupied: chess.Bitboard):
-        queen_actions = {}
-        attack_actions = {}
         for current_piece_position in get_individual_ones_in_bb(self.bb):
             target_moves = chess.BB_EMPTY
             attack_moves = chess.BB_EMPTY
@@ -56,8 +54,8 @@ class Queen(Piece):
                             attack_moves |= next_square
                             continue_in_direction = False
 
-            queen_actions[current_piece_position] = target_moves
-            attack_actions[current_piece_position] = attack_moves
+            queen_actions = Action.generate_actions(target_moves, chess.QUEEN, current_piece_position)
+            attack_actions = Action.generate_actions(attack_moves, chess.QUEEN, current_piece_position)
 
         return queen_actions, attack_actions
 

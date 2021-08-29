@@ -3,6 +3,7 @@ from chess.moves import Moves
 from chess.pieces.piece import Piece
 import chess
 from chess import utils
+from chess.action import Action
 
 class Rook(Piece):
     def __init__(self, bb, color, piece_type):
@@ -21,8 +22,6 @@ class Rook(Piece):
     moves_lookup = generate_move_lookup()
         
     def get_moves(self, opponent_occupied: chess.Bitboard, player_occupied: chess.Bitboard):
-        rook_actions = {}
-        attack_actions = {}
         for current_piece_position in utils.get_individual_ones_in_bb(self.bb):
             target_moves = chess.BB_EMPTY
             attack_moves = chess.BB_EMPTY
@@ -47,7 +46,7 @@ class Rook(Piece):
                             attack_moves |= next_square
                             continue_in_direction = False
 
-            rook_actions[current_piece_position] = target_moves
-            attack_actions[current_piece_position] = attack_moves
+            rook_actions = Action.generate_actions(target_moves, chess.ROOK, current_piece_position)
+            attack_actions = Action.generate_actions(attack_moves, chess.ROOK, current_piece_position)
 
         return rook_actions, attack_actions

@@ -2,6 +2,7 @@ from typing import Dict, Tuple
 from chess.pieces.piece import Piece
 from chess.moves import Moves
 from chess.utils import get_individual_ones_in_bb, get_square_int_from_bb
+from chess.action import Action
 import chess
 
 class Pawn(Piece):
@@ -39,8 +40,6 @@ class Pawn(Piece):
     move_lookup = generate_move_lookup()
 
     def get_moves(self, color: bool, opponent_occupied: chess.Bitboard, player_occupied: chess.Bitboard, en_passant_bb: chess.Bitboard):
-        pawn_actions = {}
-        attack_actions = {}
         for current_piece_position in get_individual_ones_in_bb(self.bb):
             attack_mask = self.diag_moves(current_piece_position, color) & (opponent_occupied | en_passant_bb)
             target_squares = attack_mask
@@ -51,8 +50,10 @@ class Pawn(Piece):
                     move_2_up = self.two_forward_move(current_piece_position, color) & ~(opponent_occupied | player_occupied)
                     if move_2_up:
                         target_squares |= move_2_up
-            pawn_actions[current_piece_position] = target_squares
-            attack_actions[current_piece_position] = attack_mask
+
+            pawn_actions = Action.generate_actions(target_squares, chess.PAWN, current_piece_position)
+            attack_actions = Action.generate_actions(attack_mask, chess.PAWN, current_piece_position)
+
         return pawn_actions, attack_actions
 
     @staticmethod
