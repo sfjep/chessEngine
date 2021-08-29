@@ -19,6 +19,10 @@ class Board:
         self.BQ = Pieces.Queen(chess.BB_EMPTY, chess.BLACK, chess.QUEEN)
         self.BK = Pieces.King(chess.BB_EMPTY, chess.BLACK, chess.KING)
 
+        self.white_occupied = self.WP.bb | self.WR.bb | self.WB.bb | self.WN.bb | self.WQ.bb | self.WK.bb
+        self.black_occupied = self.BP.bb | self.BR.bb | self.BB.bb | self.BN.bb | self.BQ.bb | self.BK.bb
+        self.all_occupied = self.white_occupied | self.black_occupied
+        
         self.white_pieces = [self.WP, self.WR, self.WB, self.WN, self.WQ, self.WK]
         self.black_pieces = [self.BP, self.BR, self.BB, self.BN, self.BQ, self.BK]
         self.pieces = self.white_pieces + self.black_pieces

@@ -5,7 +5,7 @@ from dataclasses import dataclass
 @dataclass
 class State:
     board: Board
-    parent: 'State'
+    parent: Optional['State']
     turn: bool
     white_can_castle_kingside: bool
     white_can_castle_queenside: bool
