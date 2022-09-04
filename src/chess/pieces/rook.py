@@ -14,24 +14,24 @@ class Rook(Piece):
 
         for square, bb_square in zip(chess.SQUARES, chess.BB_SQUARES):
             moves_lookup[square] = (
-                utils.get_rank_from_bb(bb_square) | 
+                utils.get_rank_from_bb(bb_square) |
                 utils.get_file_from_bb(bb_square)) & ~bb_square
-        
+
         return moves_lookup
 
     moves_lookup = generate_move_lookup()
-        
+
     def get_moves(self, opponent_occupied: chess.Bitboard, player_occupied: chess.Bitboard):
         rook_actions = []
         attack_actions = []
         for current_piece_position in utils.get_individual_ones_in_bb(self.bb):
-            target_moves = chess.BB_EMPTY
+            moves = chess.BB_EMPTY
             attack_moves = chess.BB_EMPTY
             move_generator = [
                 Moves.move_up,
                 Moves.move_down,
                 Moves.move_left,
-                Moves.move_right 
+                Moves.move_right
             ]
             for next_move in move_generator:
                 continue_in_direction = True
@@ -43,12 +43,12 @@ class Rook(Piece):
                     elif next_square & player_occupied:
                         continue_in_direction = False
                     else:
-                        target_moves |= next_square
-                        if target_moves & opponent_occupied:
+                        moves |= next_square
+                        if moves & opponent_occupied:
                             attack_moves |= next_square
                             continue_in_direction = False
 
-            rook_actions += Action.generate_actions(target_moves, chess.ROOK, current_piece_position)
+            rook_actions += Action.generate_actions(moves, chess.ROOK, current_piece_position)
             attack_actions += Action.generate_actions(attack_moves, chess.ROOK, current_piece_position)
 
         return rook_actions, attack_actions
