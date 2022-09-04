@@ -15,8 +15,8 @@ class Action:
         for new_piece_position in get_individual_ones_in_bb(moves):
             actions.append(
                 Action(
-                    piece_type, 
-                    get_square_int_from_bb(current_piece_position), 
+                    piece_type,
+                    get_square_int_from_bb(current_piece_position),
                     get_square_int_from_bb(new_piece_position)
                 )
             )
