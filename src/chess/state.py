@@ -6,8 +6,9 @@ from typing import Optional
 
 @dataclass
 class State:
+    parent: Optional["State"]
+    fen: str
     board: Board
-    parent: Optional['State']
     turn: bool
     white_can_castle_kingside: bool
     white_can_castle_queenside: bool
@@ -18,7 +19,7 @@ class State:
     black_king_in_check: bool
     black_king_checkmate: bool
     en_passant_pawn_position: chess.Bitboard
-    en_passant_capture_square: chess.Bitboard
+    en_passant_capture_square: chess.Bitboard  # Destination square of attacking piece
     halfmove_count: int
     move_count: int
 
@@ -26,7 +27,7 @@ class State:
         if fen:
             self.get_state_from_fen(fen)
         else:
-            self.get_initial_state()
+            self.get_state_from_fen(chess.STARTING_BOARD_FEN)
 
     def get_state_from_fen(self, fen: str):
         fields = fen.split()
@@ -37,6 +38,7 @@ class State:
         halfmove_clock = fields[4]
         fullmove_number = fields[5]
 
+        self.fen = fen
         self.board = Board(fen_board)
         self.turn = player == "w"
 
@@ -46,56 +48,54 @@ class State:
         self.black_can_castle_queenside = "q" in castling_rights
 
         if en_passant != "-":
-            self.en_passant_capture_square = chess.BB_SQUARES[chess.SQUARE_NAMES.index(en_passant)]
+            self.en_passant_capture_square = chess.BB_SQUARES[
+                chess.SQUARE_NAMES.index(en_passant)
+            ]
         else:
             self.en_passant_capture_square = chess.BB_EMPTY
 
         self.halfmove_count = int(halfmove_clock)
         self.move_count = int(fullmove_number)
 
-    def get_initial_state(self):
-        self.board = Board()
-
-        self.parent = None
-        self.turn = chess.WHITE
-
-        self.white_can_castle_kingside = False
-        self.white_can_castle_queenside = False
-        self.black_can_castle_kingside = False
-        self.black_can_castle_queenside = False
-
-        self.white_king_in_check = False
-        self.white_king_checkmate = False
-        self.black_king_in_check = False
-        self.black_king_checkmate = False
-        self.en_passant_pawn_position = chess.BB_EMPTY
-        self.en_passant_capture_square = chess.BB_EMPTY
-        self.halfmove_count = 0
-        self.move_count = 0
-        # self.fen_list = [chess.STARTING_BOARD_FEN]
-
-
-    
     def get_possible_actions(self):
-        '''
+        """
         Generate list of actions possible in state
             Check which color is playing
             Iterate through all pieces of color
             Take index of piece and get moves lookup
-            Convert possible moves to list of       
-        '''     
-        possible_actions = []   
+            Convert possible moves to list of
+        """
+        possible_actions = []
         if self.turn == chess.WHITE:
-            for piece in self.board_white_pieces:
+            for piece in self.board_white_pieces:  # HECK
                 if piece.piece_type == chess.PAWN:
-                    moves, attacks = piece.get_moves(chess.WHTIE, self.board.white_occupied, self.board.black_occupied, self.en_passant_capture_square)
+                    moves, attacks = piece.get_moves(
+                        chess.WHTIE,
+                        self.board.black_occupied,
+                        self.board.white_occupied,
+                        self.en_passant_capture_square,
+                    )
+                elif piece.piece_type == chess.KING:
+                    moves, attacks = piece.get_moves(
+                        chess.WHITE,
+
+                    )
                 else:
-                    moves, attacks = piece.get_moves(self.board.white_occupied, self.board.black_occupied)
+                    moves, attacks = piece.get_moves(
+                        self.board.white_occupied, self.board.black_occupied
+                    )
                 possible_actions.append(moves)
         else:
             for piece in self.board_black_pieces:
                 if piece.piece_type == chess.PAWN:
-                    moves, attacks = piece.get_moves(chess.BLACK, self.board.black_occupied, self.board.white_occupied, self.en_passant_capture_square)
+                    moves, attacks = piece.get_moves(
+                        chess.BLACK,
+                        self.board.black_occupied,
+                        self.board.white_occupied,
+                        self.en_passant_capture_square,
+                    )
                 else:
-                    moves, attacks = piece.get_moves(self.board.black_occupied, self.board.white_occupied)
+                    moves, attacks = piece.get_moves(
+                        self.board.black_occupied, self.board.white_occupied
+                    )
                 possible_actions.append(moves)
