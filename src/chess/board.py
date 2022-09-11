@@ -113,9 +113,10 @@ class Board:
             yield most_sig_bit
             bb_pieces ^= most_sig_bit
 
-    def get_board_chararray(self):
+    @staticmethod
+    def get_board_arr_from_board_obj(board):
         board_arr = np.full([8, 8], " ", dtype=str)
-        for piece in self.pieces:
+        for piece in board.pieces:
             for bb in get_individual_ones_in_bb(piece.bb):
                 idx = get_square_int_from_bb(bb)
                 if piece.color == chess.WHITE:
@@ -128,8 +129,9 @@ class Board:
                     ]
         return board_arr
 
-    def print_board_from_board_obj(self):
-        board_arr = np.flip(get_board_chararray(self), axis=0)
+    @classmethod
+    def print_board_from_board_obj(cls, board):
+        board_arr = np.flip(cls.get_board_arr_from_board_obj(board), axis=0)
         print(repr(board_arr))
 
 
