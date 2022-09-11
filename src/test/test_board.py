@@ -3,8 +3,8 @@ import src.chess as chess
 from src.chess.board import Board, InvalidFenException
 from src.chess.utils import get_individual_ones_in_bb
 
+
 class BoardTest(unittest.TestCase):
-    
     def test_square_generator_corners(self):
         self.corners = chess.BB_A1 | chess.BB_A8 | chess.BB_H1 | chess.BB_H8
         squares = [bb for bb in get_individual_ones_in_bb(self.corners)]
@@ -81,6 +81,5 @@ class BoardTest(unittest.TestCase):
         self.assertRaises(InvalidFenException, Board, "8/8/8/5PPP1/8/R8r/8/k7/8")
 
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
