@@ -11,6 +11,14 @@ class Action:
 
     @staticmethod
     def generate_actions(moves: chess.Bitboard, piece_type: int, current_piece_position: chess.Bitboard):
+        """
+        Params
+            moves : bitboard containing destination squares of the piece to move the
+            piece_type : piece type int
+            current_piece_position : bitboard containint current position of piece to move
+        Returns:
+            A list of 'Action' instances representing each source and destination square for piece to move.
+        """
         actions = []
         for new_piece_position in get_individual_ones_in_bb(moves):
             actions.append(
