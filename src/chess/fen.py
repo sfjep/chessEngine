@@ -4,7 +4,7 @@ import chess
 from chess.state import State
 
 class Fen:
-    
+
     @classmethod
     def get_fen_from_state(cls, state: State):
         fen = cls._get_board_fen(state) + " "
@@ -18,7 +18,7 @@ class Fen:
 
     @staticmethod
     def _get_board_fen(state: State):
-        board_arr = np.flip(state.board.get_board_arr_from_board_obj(state.board), axis=0)
+        board_arr = np.flip(state.board.get_board_chararray(), axis=0)
         fen = ''
         for i in range(board_arr.shape[0]):
             empty_count = 0
@@ -37,7 +37,7 @@ class Fen:
             if i != (board_arr.shape[0] - 1):
                 fen += "/"
         return fen
-        
+
 
     @staticmethod
     def _get_turn_fen(state: State):
@@ -59,7 +59,7 @@ class Fen:
             fen += "q"
         if len(fen) == 0:
             fen += "-"
-        return fen      
+        return fen
 
     @staticmethod
     def _get_en_passant_fen(state: State):
@@ -71,7 +71,7 @@ class Fen:
     @staticmethod
     def _get_halfmove_count_fen(state: State):
         return str(state.halfmove_count)
-    
+
     @staticmethod
     def _get_move_count_fen(state: State):
         return str(state.move_count)

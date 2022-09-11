@@ -129,7 +129,7 @@ class Board:
         return board_arr
 
     def print_board_from_board_obj(self):
-        board_arr = np.flip(get_board_chararray(self), axis=0)
+        board_arr = np.flip(self.get_board_chararray(), axis=0)
         print(repr(board_arr))
 
 
