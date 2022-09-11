@@ -3,28 +3,28 @@ import chess
 import chess.pieces as Pieces
 from chess import Bitboard
 from chess.utils import get_individual_ones_in_bb, get_square_int_from_bb
-
+from chess.pieces.piece import Piece
 
 class Board:
-    WP: chess.Piece
-    WR: chess.Piece
-    WN: chess.Piece
-    WB: chess.Piece
-    WQ: chess.Piece
-    WK: chess.Piece
-    BP: chess.Piece
-    BR: chess.Piece
-    BN: chess.Piece
-    BB: chess.Piece
-    BQ: chess.Piece
-    BK: chess.Piece
+    WP: Piece
+    WR: Piece
+    WN: Piece
+    WB: Piece
+    WQ: Piece
+    WK: Piece
+    BP: Piece
+    BR: Piece
+    BN: Piece
+    BB: Piece
+    BQ: Piece
+    BK: Piece
 
     white_occupied: chess.Bitboard
     black_occupied: chess.Bitboard
     all_occupied: chess.Bitboard
-    white_pieces: chess.Bitboard
-    black_pieces: chess.Bitboard
-    pieces: chess.Bitboard
+    white_pieces: list
+    black_pieces: list
+    pieces: list
 
     def __init__(self, fen_board: str = None):
         self.WP = Pieces.Pawn(chess.BB_EMPTY, chess.WHITE, chess.PAWN)
