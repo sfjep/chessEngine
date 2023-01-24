@@ -9,6 +9,9 @@ class Action:
     origin_square: int
     new_square: int
 
+    def __repr__(self):
+        return f"""\nAction({chess.PIECE_SYMBOLS[self.piece_type]} {chess.SQUARE_NAMES[self.origin_square]} - {chess.SQUARE_NAMES[self.new_square]})"""
+
     @staticmethod
     def generate_actions(moves: chess.Bitboard, piece_type: int, current_piece_position: chess.Bitboard):
         """
