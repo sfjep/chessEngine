@@ -124,11 +124,7 @@ class Board:
                     self.board_arr[idx // 8, idx % 8] = f"W{chess.PIECE_SYMBOLS[piece.piece_type].upper()}"
                 else:
                     self.board_arr[idx // 8, idx % 8] = f"B{chess.PIECE_SYMBOLS[piece.piece_type].upper()}"
-
-    def print_board_from_board_obj(self):
-        board_arr = np.flip(self.get_board_chararray(), axis=0)
-        print(repr(board_arr))
-
+        self.board_arr = np.flip(self.board_arr, axis=0)
 
     def get_piece_name_from_board_dim(self, row: int, column: int):
         return self.board_arr[row][column]

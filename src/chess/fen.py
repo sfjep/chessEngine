@@ -18,7 +18,7 @@ class Fen:
 
     @staticmethod
     def _get_board_fen(state: State):
-        board_arr = np.flip(state.board.get_board_chararray(), axis=0)
+        board_arr = state.board.board_arr
         fen = ''
         for i in range(board_arr.shape[0]):
             empty_count = 0
@@ -27,10 +27,10 @@ class Fen:
                     empty_count += 1
                 else:
                     if empty_count == 0:
-                        fen += chess.UNICODE_SYMBOL_TO_CHAR[board_arr[i, j]]
+                        fen += chess.PIECE_STRING_TO_CHAR[board_arr[i, j]]
                     else:
                         fen += str(empty_count)
-                        fen += chess.UNICODE_SYMBOL_TO_CHAR[board_arr[i, j]]
+                        fen += chess.PIECE_STRING_TO_CHAR[board_arr[i, j]]
                         empty_count = 0
             if empty_count != 0:
                 fen += str(empty_count)

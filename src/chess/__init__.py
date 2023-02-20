@@ -30,6 +30,16 @@ UNICODE_SYMBOL_TO_CHAR = {
     "♙": "p", "♟": "P",
 }
 
+PIECE_STRING_TO_CHAR = {
+    "WK": "K", "WQ": "Q", "WN": "N", "WB": "B", "WR": "R", "WP": "P",
+    "BK": "k", "BQ": "q", "BN": "n", "BB": "b", "BR": "r", "BP": "p",
+}
+
+CHAR_TO_PIECE_STRING = {
+    "K": "WK", "Q": "WQ", "N": "WN", "B": "WB", "R": "WR", "P": "WP",
+    "k": "BK", "q": "BQ", "n": "BN", "b": "BB", "r": "BR", "p": "BP",
+}
+
 Square = int
 SQUARES = [
     A1, B1, C1, D1, E1, F1, G1, H1,
