@@ -11,7 +11,7 @@ COLOR_NAMES = ["black", "white"]
 PieceType = int
 PIECE_TYPES = [PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING] = range(1, 7)
 PIECE_SYMBOLS = [None, "p", "n", "b", "r", "q", "k"]
-
+PIECE_STRINGS = ["WK", "WQ", "WN", "WB", "WR", "WP", "BK", "BQ", "BN", "BB", "BR", "BP"]
 
 UNICODE_CHAR_TO_SYMBOL = {
     "r": "♖", "R": "♜",

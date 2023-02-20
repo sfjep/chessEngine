@@ -103,6 +103,8 @@ class Board:
         self.black_pieces = [self.BP, self.BR, self.BB, self.BN, self.BQ, self.BK]
         self.pieces = self.white_pieces + self.black_pieces
 
+        self.get_board_chararray()
+
     @staticmethod
     def piece_squares(bb_pieces: Bitboard):
         """
@@ -114,24 +116,22 @@ class Board:
             bb_pieces ^= most_sig_bit
 
     def get_board_chararray(self):
-        board_arr = np.full([8, 8], " ", dtype=str)
+        self.board_arr = np.full([8, 8], " ", dtype=object)
         for piece in self.pieces:
             for bb in get_individual_ones_in_bb(piece.bb):
                 idx = get_square_int_from_bb(bb)
                 if piece.color == chess.WHITE:
-                    board_arr[idx // 8, idx % 8] = chess.UNICODE_CHAR_TO_SYMBOL[
-                        chess.PIECE_SYMBOLS[piece.piece_type].upper()
-                    ]
+                    self.board_arr[idx // 8, idx % 8] = f"W{chess.PIECE_SYMBOLS[piece.piece_type].upper()}"
                 else:
-                    board_arr[idx // 8, idx % 8] = chess.UNICODE_CHAR_TO_SYMBOL[
-                        chess.PIECE_SYMBOLS[piece.piece_type].lower()
-                    ]
-        return board_arr
+                    self.board_arr[idx // 8, idx % 8] = f"B{chess.PIECE_SYMBOLS[piece.piece_type].upper()}"
 
     def print_board_from_board_obj(self):
         board_arr = np.flip(self.get_board_chararray(), axis=0)
         print(repr(board_arr))
 
+
+    def get_piece_name_from_board_dim(self, row: int, column: int):
+        return self.board_arr[row][column]
 
 class InvalidFenException(Exception):
     pass
