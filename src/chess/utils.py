@@ -30,6 +30,8 @@ def get_bb_from_binary(bb: int):
 def get_square_int_from_bb(bb: int):
     return chess.BB_SQUARES.index(bb)
 
+def get_bb_from_square_int(square_int: int):
+    return chess.BB_SQUARES[square_int]
 
 def get_file_from_bb(bb: int):
     if bb & chess.BB_FILE_A != 0: return chess.BB_FILE_A
@@ -75,9 +77,16 @@ def mask_up_own_pieces(diagonal_bb: chess.Bitboard, player_occupied: chess.Bitbo
     _mask = diagonal_bb & player_occupied
     return diagonal_bb & ~((_mask) | (_mask - 1)) | (_mask)
 
-def mask_up_right_opponent_pieces(diagonal_bb: chess.Bitboard, opponent_occupied: chess.Bitboard):
-    _mask = diagonal_bb & opponent_occupied
-    return diagonal_bb & ~(_mask | (_mask - 1))
+def mask_down_own_pieces(diagonal_bb: chess.Bitboard, player_occupied: chess.Bitboard):
+    """Length is counting from 1, index is counting from 0.
+    Therefore we subtract 1 from the bit length to get the index
+    """
+    msb_index = (diagonal_bb & player_occupied).bit_length()
+    if msb_index == 0:
+        return 0
+    else:
+        _mask = get_bb_from_square_int(msb_index-1) - 1
+        return (_mask | player_occupied) & diagonal_bb
 
 
 def dec_to_signed_bin(num: int):

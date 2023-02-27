@@ -2,7 +2,7 @@ from typing import Dict, Tuple
 import chess
 from chess.moves import Moves
 from chess.pieces.piece import Piece
-from chess.utils import mask_up_own_pieces, get_rank_from_bb, get_file_from_bb, get_individual_ones_in_bb, get_square_int_from_bb
+import chess.utils as utils
 from chess.action import Action
 
 
@@ -15,7 +15,7 @@ class Queen(Piece):
 
         for square, bb_square in zip(chess.SQUARES, chess.BB_SQUARES):
             moves_lookup[square] = (
-                ((get_rank_from_bb(bb_square) | get_file_from_bb(bb_square)) & ~bb_square) |
+                ((utils.get_rank_from_bb(bb_square) | utils.get_file_from_bb(bb_square)) & ~bb_square) |
                 Moves.move_down_left_full_range(bb_square) |
                 Moves.move_down_right_full_range(bb_square) |
                 Moves.move_up_left_full_range(bb_square) |
@@ -30,8 +30,8 @@ class Queen(Piece):
         queen_actions = []
         attack_actions = []
 
-        for current_piece_position in get_individual_ones_in_bb(self.bb):
-            square_int = get_square_int_from_bb(current_piece_position)
+        for current_piece_position in utils.get_individual_ones_in_bb(self.bb):
+            square_int = utils.get_square_int_from_bb(current_piece_position)
             moves = Queen.MOVES_LOOKUP[square_int]
 
             for move_range in [
@@ -40,8 +40,14 @@ class Queen(Piece):
                 Moves.move_up_full_range,
                 Moves.move_right_full_range
             ]:
-                moves = mask_up_own_pieces(move_range(current_piece_position), player_occupied) & moves
-
+                moves &= ~utils.mask_up_own_pieces(move_range(current_piece_position), player_occupied)
+            for move_range in [
+                Moves.move_down_left_full_range,
+                Moves.move_left_full_range,
+                Moves.move_down_right_full_range,
+                Moves.move_down_full_range
+            ]:
+                moves &= ~utils.mask_down_own_pieces(move_range(current_piece_position), player_occupied)
             # moves = moves & ~up_right_mask & ~up_left_mask & ~up_mask
 
             # Mask out downward moves (left, down, downleft)

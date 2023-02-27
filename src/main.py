@@ -10,7 +10,7 @@ from chess.gui import GUI
 
 def main():
     gui = GUI()
-    state = State("r1bqkbnr/pp1ppppp/2n5/7P/3pP3/5N2/PPP3PP/2BQKB1R w KQkq - 3 6")
+    state = State("r1bqkbnr/pp1ppppp/2n5/7P/1P1pP1Q1/8/PPP3PP/2B1KB1R w KQkq - 3 6")
     gui.load_images()
     gui.run(state.board)
 
