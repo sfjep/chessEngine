@@ -129,5 +129,6 @@ class Board:
     def get_piece_name_from_board_dim(self, row: int, column: int):
         return self.board_arr[row][column]
 
+
 class InvalidFenException(Exception):
     pass
