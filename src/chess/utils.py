@@ -65,10 +65,11 @@ def get_individual_ones_in_bb(bb_pieces: chess.Bitboard):
         bb_pieces ^= most_sig_bit
 
 
-def mask_up_right_own_pieces(diagonal_bb: chess.Bitboard, player_occupied: chess.Bitboard):
+def mask_up_own_pieces(diagonal_bb: chess.Bitboard, player_occupied: chess.Bitboard):
     """Minus 1 flips the sign of all less significant bits from the LEAST significant 1-bit in player occupied
     For example, subtracting 1 from the binary number 0b1010 gives you 0b1001.
-    If you then take the complement of this mask with ~(bitboard2 | (bitboard2 - 1)), you get a mask with all the bits set above the most significant bit in bitboard2.
+    If you then take the complement of this mask with ~(bitboard2 | (bitboard2 - 1)),
+    you get a mask with all the bits set above the most significant bit in bitboard2.
     This mask can be used to filter out any values in bitboard1 that have a bit set below the most significant bit in bitboard2.
     """
     _mask = diagonal_bb & player_occupied
@@ -77,3 +78,11 @@ def mask_up_right_own_pieces(diagonal_bb: chess.Bitboard, player_occupied: chess
 def mask_up_right_opponent_pieces(diagonal_bb: chess.Bitboard, opponent_occupied: chess.Bitboard):
     _mask = diagonal_bb & opponent_occupied
     return diagonal_bb & ~(_mask | (_mask - 1))
+
+
+def dec_to_signed_bin(num: int):
+    if num >= 0:
+        return bin(num)[2:].zfill(64)
+    else:
+        # Two's complement
+        return bin((1 << 64) + num)[2:]

@@ -38,25 +38,49 @@ class Moves:
     def move_down_right(b: chess.Bitboard) -> chess.Bitboard:
         return (b >> 7) & ~chess.BB_FILE_A & chess.BB_ALL
 
-    def move_up_left_diagonal(b: chess.Bitboard) -> chess.Bitboard:
+    def move_up_left_full_range(b: chess.Bitboard) -> chess.Bitboard:
         diag = 0
         while (b := Moves.move_up_left(b)) != 0 :
             diag |= b
         return diag
 
-    def move_up_right_diagonal(b: chess.Bitboard) -> chess.Bitboard:
+    def move_up_full_range(b: chess.Bitboard) -> chess.Bitboard:
+        diag = 0
+        while (b := Moves.move_up(b)) != 0 :
+            diag |= b
+        return diag
+
+    def move_down_full_range(b: chess.Bitboard) -> chess.Bitboard:
+        diag = 0
+        while (b := Moves.move_down(b)) != 0 :
+            diag |= b
+        return diag
+
+    def move_left_full_range(b: chess.Bitboard) -> chess.Bitboard:
+        diag = 0
+        while (b := Moves.move_left(b)) != 0 :
+            diag |= b
+        return diag
+
+    def move_right_full_range(b: chess.Bitboard) -> chess.Bitboard:
+        diag = 0
+        while (b := Moves.move_right(b)) != 0 :
+            diag |= b
+        return diag
+
+    def move_up_right_full_range(b: chess.Bitboard) -> chess.Bitboard:
         diag = 0
         while (b := Moves.move_up_right(b)) != 0 :
             diag |= b
         return diag
 
-    def move_down_left_diagonal(b: chess.Bitboard) -> chess.Bitboard:
+    def move_down_left_full_range(b: chess.Bitboard) -> chess.Bitboard:
         diag = 0
         while (b := Moves.move_down_left(b)) != 0 :
             diag |= b
         return diag
 
-    def move_down_right_diagonal(b: chess.Bitboard) -> chess.Bitboard:
+    def move_down_right_full_range(b: chess.Bitboard) -> chess.Bitboard:
         diag = 0
         while (b := Moves.move_down_right(b)) != 0 :
             diag |= b

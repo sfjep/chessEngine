@@ -15,10 +15,10 @@ class Bishop(Piece):
 
         for square, bb_square in zip(chess.SQUARES, chess.BB_SQUARES):
             moves_lookup[square] = (
-                Moves.move_down_left_diagonal(bb_square) |
-                Moves.move_down_right_diagonal(bb_square) |
-                Moves.move_up_left_diagonal(bb_square) |
-                Moves.move_up_right_diagonal(bb_square)
+                Moves.move_down_left_full_range(bb_square) |
+                Moves.move_down_right_full_range(bb_square) |
+                Moves.move_up_left_full_range(bb_square) |
+                Moves.move_up_right_full_range(bb_square)
             )
 
         return moves_lookup
@@ -32,10 +32,10 @@ class Bishop(Piece):
             moves = chess.BB_EMPTY
             attack_moves = chess.BB_EMPTY
             move_generator = [
-                Moves.move_down_left_diagonal,
-                Moves.move_down_right_diagonal,
-                Moves.move_up_left_diagonal,
-                Moves.move_up_right_diagonal
+                Moves.move_down_left_full_range,
+                Moves.move_down_right_full_range,
+                Moves.move_up_left_full_range,
+                Moves.move_up_right_full_range
             ]
             for next_move in move_generator:
                 continue_in_direction = True
