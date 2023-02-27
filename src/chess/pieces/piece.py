@@ -12,6 +12,9 @@ class Piece(ABC):
         self.color = color
         self.piece_type = piece_type
 
+    def __repr__(self):
+        return f"{chess.COLOR_NAMES[self.color]} {chess.PIECE_SYMBOLS[self.piece_type]}"
+
     @abstractmethod
     def generate_move_lookup(self):
         pass

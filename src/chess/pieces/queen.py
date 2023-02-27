@@ -2,8 +2,9 @@ from typing import Dict, Tuple
 import chess
 from chess.moves import Moves
 from chess.pieces.piece import Piece
-from chess.utils import get_rank_from_bb, get_file_from_bb, get_individual_ones_in_bb, get_square_int_from_bb
+from chess.utils import mask_up_right_own_pieces, get_rank_from_bb, get_file_from_bb, get_individual_ones_in_bb, get_square_int_from_bb
 from chess.action import Action
+
 
 class Queen(Piece):
     def __init__(self, bb, color, piece_type):
@@ -30,6 +31,22 @@ class Queen(Piece):
         attack_actions = []
 
         for current_piece_position in get_individual_ones_in_bb(self.bb):
+            square_int = get_square_int_from_bb(current_piece_position)
+            moves = Queen.MOVES_LOOKUP[square_int]
+
+            test = mask_up_right_own_pieces(Moves.move_up_right_diagonal(current_piece_position), player_occupied)
+            # Mask out downward moves (left, down, downleft)
+            # mask = get_rank_from_bb(current_piece_position)
+                    # | get_file_from_bb(current_piece_position)) & player_occupied
+
+            mask |= (
+                (Moves.move_down_left_diagonal(current_piece_position) & player_occupied) |
+                (Moves.move_down_right_diagonal(current_piece_position) & player_occupied) |
+                (Moves.move_up_left_diagonal(current_piece_position) & player_occupied) |
+                (Moves.move_up_right_diagonal(current_piece_position) & player_occupied)
+            )
+            # moves &= ~mask
+
             moves = chess.BB_EMPTY
             attack_moves = chess.BB_EMPTY
             move_generator = [
@@ -37,10 +54,10 @@ class Queen(Piece):
                 Moves.move_down,
                 Moves.move_left,
                 Moves.move_right,
-                Moves.move_down_left_diagonal,
-                Moves.move_down_right_diagonal,
-                Moves.move_up_left_diagonal,
-                Moves.move_up_right_diagonal
+                Moves.move_down_left,
+                Moves.move_down_right,
+                Moves.move_up_left,
+                Moves.move_up_right
             ]
             for next_move in move_generator:
                 continue_in_direction = True

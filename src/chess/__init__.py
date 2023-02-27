@@ -11,7 +11,7 @@ COLOR_NAMES = ["black", "white"]
 PieceType = int
 PIECE_TYPES = [PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING] = range(1, 7)
 PIECE_SYMBOLS = [None, "p", "n", "b", "r", "q", "k"]
-
+PIECE_STRINGS = ["WK", "WQ", "WN", "WB", "WR", "WP", "BK", "BQ", "BN", "BB", "BR", "BP"]
 
 UNICODE_CHAR_TO_SYMBOL = {
     "r": "♖", "R": "♜",
@@ -28,6 +28,16 @@ UNICODE_SYMBOL_TO_CHAR = {
     "♕": "q", "♛": "Q",
     "♔": "k", "♚": "K",
     "♙": "p", "♟": "P",
+}
+
+PIECE_STRING_TO_CHAR = {
+    "WK": "K", "WQ": "Q", "WN": "N", "WB": "B", "WR": "R", "WP": "P",
+    "BK": "k", "BQ": "q", "BN": "n", "BB": "b", "BR": "r", "BP": "p",
+}
+
+CHAR_TO_PIECE_STRING = {
+    "K": "WK", "Q": "WQ", "N": "WN", "B": "WB", "R": "WR", "P": "WP",
+    "k": "BK", "q": "BQ", "n": "BN", "b": "BB", "r": "BR", "p": "BP",
 }
 
 Square = int
