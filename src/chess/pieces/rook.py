@@ -9,6 +9,7 @@ class Rook(Piece):
     def __init__(self, bb, color, piece_type):
         super().__init__(bb, color, piece_type)
 
+    @staticmethod
     def generate_move_lookup() -> Dict[Tuple[chess.Square, chess.Color], chess.Bitboard]:
         moves_lookup = {}
 

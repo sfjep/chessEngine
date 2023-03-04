@@ -1,4 +1,3 @@
-
 import pygame as p
 import chess
 
@@ -12,8 +11,32 @@ class GUI:
 	def __init__(self):
 		p.init()
 		self.screen = p.display.set_mode((self.WIDTH, self.HEIGHT))
-		self.clock = p.time.Clock()
-		self.screen.fill(p.Color("white"))
+		p.display.set_caption('Chess')
+
+	# Show methods
+	def show_background(self, surface):
+		for row in range(self.DIMENSION):
+			for col in range(self.DIMENSION):
+				color = self._get_square_color(row, col)
+
+				p.draw.rect(
+					surface,
+					color,
+					p.Rect(
+						col * self.SQUARE_SIZE,
+						row * self.SQUARE_SIZE,
+						self.SQUARE_SIZE,
+						self.SQUARE_SIZE
+					)
+				)
+
+	@staticmethod
+	def _get_square_color(row: int, col: int) -> p.Color:
+		if (row+col)%2==0:
+			return p.Color(248,220,180)
+		else:
+			return p.Color(180,134,99)
+
 
 	def load_images(self):
 		for piece in chess.PIECE_STRINGS:

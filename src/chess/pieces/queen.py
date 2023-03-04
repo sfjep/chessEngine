@@ -30,24 +30,27 @@ class Queen(Piece):
         queen_actions = []
         attack_actions = []
 
-        for current_piece_position in utils.get_individual_ones_in_bb(self.bb):
-            square_int = utils.get_square_int_from_bb(current_piece_position)
-            moves = Queen.MOVES_LOOKUP[square_int]
+        # Positions of each individual piece among pieces of this piece type/color
+        piece_positions = utils.get_individual_ones_in_bb(self.bb)
 
-            for move_range in [
+        for current_piece_position in piece_positions:
+            target_squares = self.MOVES_LOOKUP[current_piece_position]
+
+            upward_move_ranges = [
                 Moves.move_up_right_full_range,
                 Moves.move_up_left_full_range,
                 Moves.move_up_full_range,
                 Moves.move_right_full_range
-            ]:
-                moves &= ~utils.mask_up_own_pieces(move_range(current_piece_position), player_occupied)
-            for move_range in [
+            ]
+            target_squares &= ~utils.mask_own_pieces_upwards(current_piece_position, upward_move_ranges, player_occupied)
+            
+            downward_move_ranges = [
                 Moves.move_down_left_full_range,
                 Moves.move_left_full_range,
                 Moves.move_down_right_full_range,
                 Moves.move_down_full_range
-            ]:
-                moves &= ~utils.mask_down_own_pieces(move_range(current_piece_position), player_occupied)
+            ]
+            target_squares &= ~utils.mask_own_pieces_downwards(current_piece_position, downward_move_ranges, player_occupied)
             # moves = moves & ~up_right_mask & ~up_left_mask & ~up_mask
 
             # Mask out downward moves (left, down, downleft)
