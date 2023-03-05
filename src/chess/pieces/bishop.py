@@ -9,21 +9,18 @@ from chess.action import Action
 class Bishop(Piece):
     def __init__(self, bb, color, piece_type):
         super().__init__(bb, color, piece_type)
+        self.generate_move_lookup()
 
-    def generate_move_lookup() -> Dict[Tuple[chess.Square, chess.Color], chess.Bitboard]:
-        moves_lookup = {}
-
+    def generate_move_lookup(self):
+        self.moves_lookup = {}
         for square, bb_square in zip(chess.SQUARES, chess.BB_SQUARES):
-            moves_lookup[square] = (
+            self.moves_lookup[square] = (
                 Moves.move_down_left_full_range(bb_square) |
                 Moves.move_down_right_full_range(bb_square) |
                 Moves.move_up_left_full_range(bb_square) |
                 Moves.move_up_right_full_range(bb_square)
             )
 
-        return moves_lookup
-
-    moves_lookup = generate_move_lookup()
 
     def get_moves(self, opponent_occupied: chess.Bitboard, player_occupied: chess.Bitboard):
         bishop_actions = []

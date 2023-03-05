@@ -9,16 +9,12 @@ from chess.action import Action
 class King(Piece):
     def __init__(self, bb, color, piece_type):
         super().__init__(bb, color, piece_type)
+        self.generate_move_lookup()
 
-    def generate_move_lookup() -> Dict[
-        Tuple[chess.Square, chess.Color], chess.Bitboard
-    ]:
-        moves_lookup = {}
-
+    def generate_move_lookup(self):
+        self.moves_lookup = {}
         for color in chess.COLORS:
-
             for square, bb_square in zip(chess.SQUARES, chess.BB_SQUARES):
-
                 new_square = (
                     Moves.move_left(bb_square)
                     | Moves.move_right(bb_square)
@@ -39,11 +35,7 @@ class King(Piece):
                         new_square += Moves.move_2_right(bb_square)
                         new_square += Moves.move_2_left(bb_square)
 
-                moves_lookup[square, color] = new_square
-
-        return moves_lookup
-
-    moves_lookup = generate_move_lookup()
+                self.moves_lookup[square, color] = new_square
 
     def get_moves(
         self, color: bool, opponent_occupied: chess.Bitboard, player_occupied: chess.Bitboard, castle_queenside: bool, castle_kingside: bool

@@ -8,9 +8,10 @@ from chess.action import Action
 class Knight(Piece):
     def __init__(self, bb, color, piece_type):
         super().__init__(bb, color, piece_type)
+        self.generate_move_lookup()
 
-    def generate_move_lookup() -> Dict[chess.Square, chess.Bitboard]:
-        moves_lookup = {}
+    def generate_move_lookup(self):
+        self.moves_lookup = {}
         for square, bb_square in zip(chess.SQUARES, chess.BB_SQUARES):
             new_square = 0
             new_square += Moves.move_2_down_1_left(bb_square)
@@ -22,11 +23,8 @@ class Knight(Piece):
             new_square += Moves.move_2_right_1_up(bb_square)
             new_square += Moves.move_2_right_1_down(bb_square)
 
-            moves_lookup[square] = new_square
+            self.moves_lookup[square] = new_square
 
-        return moves_lookup
-
-    MOVES_LOOKUP = generate_move_lookup()
 
     def get_moves(self, opponent_occupied: chess.Bitboard, player_occupied: chess.Bitboard):
         knight_actions = []

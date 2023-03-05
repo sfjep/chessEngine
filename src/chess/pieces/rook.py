@@ -8,19 +8,15 @@ from chess.action import Action
 class Rook(Piece):
     def __init__(self, bb, color, piece_type):
         super().__init__(bb, color, piece_type)
+        self.generate_move_lookup()
 
-    @staticmethod
-    def generate_move_lookup() -> Dict[Tuple[chess.Square, chess.Color], chess.Bitboard]:
-        moves_lookup = {}
-
+    def generate_move_lookup(self) -> Dict[Tuple[chess.Square, chess.Color], chess.Bitboard]:
+        self.moves_lookup = {}
         for square, bb_square in zip(chess.SQUARES, chess.BB_SQUARES):
-            moves_lookup[square] = (
+            self.moves_lookup[square] = (
                 utils.get_rank_from_bb(bb_square) |
                 utils.get_file_from_bb(bb_square)) & ~bb_square
 
-        return moves_lookup
-
-    moves_lookup = generate_move_lookup()
 
     def get_moves(self, opponent_occupied: chess.Bitboard, player_occupied: chess.Bitboard):
         rook_actions = []
