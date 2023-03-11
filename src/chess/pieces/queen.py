@@ -4,7 +4,7 @@ from chess.moves import Moves
 from chess.pieces.piece import Piece
 import chess.utils as utils
 from chess.action import Action
-
+from chess.moves import SQUARE_XRAYS
 
 class Queen(Piece):
     def __init__(self, bb, color, piece_type):
@@ -16,10 +16,10 @@ class Queen(Piece):
         for square, bb_square in zip(chess.SQUARES, chess.BB_SQUARES):
             self.moves_lookup[square] = (
                 ((utils.get_rank_from_bb(bb_square) | utils.get_file_from_bb(bb_square)) & ~bb_square) |
-                Moves.move_down_left_full_range(bb_square) |
-                Moves.move_down_right_full_range(bb_square) |
-                Moves.move_up_left_full_range(bb_square) |
-                Moves.move_up_right_full_range(bb_square)
+                SQUARE_XRAYS[square]["UP_RIGHT"] |
+                SQUARE_XRAYS[square]["UP_LEFT"] |
+                SQUARE_XRAYS[square]["DOWN_RIGHT"] |
+                SQUARE_XRAYS[square]["DOWN_LEFT"]
             )
 
 
