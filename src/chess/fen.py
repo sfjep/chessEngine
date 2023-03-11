@@ -26,12 +26,10 @@ class Fen:
                 if board_arr[i, j] == ' ':
                     empty_count += 1
                 else:
-                    if empty_count == 0:
-                        fen += chess.PIECE_STRING_TO_CHAR[board_arr[i, j]]
-                    else:
+                    if empty_count != 0:
                         fen += str(empty_count)
-                        fen += chess.PIECE_STRING_TO_CHAR[board_arr[i, j]]
                         empty_count = 0
+                    fen += chess.PIECE_STRING_TO_CHAR[board_arr[i, j]]
             if empty_count != 0:
                 fen += str(empty_count)
             if i != (board_arr.shape[0] - 1):
@@ -41,10 +39,7 @@ class Fen:
 
     @staticmethod
     def _get_turn_fen(state: State):
-        if state.turn:
-            return "w"
-        else:
-            return "b"
+        return "w" if state.turn else "b"
 
     @staticmethod
     def _get_castling_fen(state: State):
