@@ -13,7 +13,7 @@ class Action:
         return f"""\nAction({chess.PIECE_SYMBOLS[self.piece_type]} {chess.SQUARE_NAMES[self.origin_square]} - {chess.SQUARE_NAMES[self.new_square]})"""
 
     @staticmethod
-    def generate_actions(moves: chess.Bitboard, piece_type: int, current_piece_position: chess.Bitboard):
+    def generate_actions(moves: chess.Bitboard, piece_type: int, current_square: int):
         """
         Params
             moves : bitboard containing destination squares of the piece to move the
@@ -22,13 +22,11 @@ class Action:
         Returns:
             A list of 'Action' instances representing each source and destination square for piece to move.
         """
-        actions = []
-        for new_piece_position in get_individual_ones_in_bb(moves):
-            actions.append(
-                Action(
-                    piece_type,
-                    get_square_int_from_bb(current_piece_position),
-                    get_square_int_from_bb(new_piece_position)
-                )
+        return [
+            Action(
+                piece_type,
+                current_square,
+                get_square_int_from_bb(new_piece_position),
             )
-        return actions
+            for new_piece_position in get_individual_ones_in_bb(moves)
+        ]
