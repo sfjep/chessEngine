@@ -1,5 +1,7 @@
 import pygame as p
 import chess
+import sys
+from chess.gui.dragger import Dragger
 
 class GUI:
 	WIDTH = HEIGHT = 512
@@ -12,15 +14,55 @@ class GUI:
 		p.init()
 		self.screen = p.display.set_mode((self.WIDTH, self.HEIGHT))
 		p.display.set_caption('Chess')
+		self._load_images()
+		self.dragger = Dragger()
+
+	def _load_images(self):
+		for piece in chess.PIECE_STRINGS:
+			self.IMAGES[piece] = p.transform.scale(
+				p.image.load(f"src/chess/images/{piece}.png"),
+				(self.SQUARE_SIZE, self.SQUARE_SIZE)
+			)
+
+	def run(self, state):
+		while True:
+			self.show_background()
+			self._draw_pieces(state.board)
+			for event in p.event.get():
+
+				# Click
+				if event.type == p.MOUSEBUTTONDOWN:
+					self.dragger.update_position(event.pos)
+					clicked_rank = self._get_y_coordinate()
+					clicked_file = self._get_x_coordinate()
+
+					if state.board.square_has_piece(clicked_rank, clicked_file):
+						print("Clicked on a piece")
+						# Get piece object - how?! Perhaps Square class??
+
+
+				# Drag piece
+				elif event.type == p.MOUSEMOTION:
+					pass
+
+				# Drop
+				elif event.type == p.MOUSEBUTTONUP:
+					pass
+
+				# Quit
+				elif event.type == p.QUIT:
+					p.quit()
+					sys.exit()
+
+				p.display.update()
 
 	# Show methods
-	def show_background(self, surface):
+	def show_background(self):
 		for row in range(self.DIMENSION):
 			for col in range(self.DIMENSION):
 				color = self._get_square_color(row, col)
-
 				p.draw.rect(
-					surface,
+					self.screen,
 					color,
 					p.Rect(
 						col * self.SQUARE_SIZE,
@@ -38,62 +80,26 @@ class GUI:
 			return p.Color(180,134,99)
 
 
-	def load_images(self):
-		for piece in chess.PIECE_STRINGS:
-			self.IMAGES[piece] = p.transform.scale(
-				p.image.load(f"src/chess/images/{piece}.png"),
-				(self.SQUARE_SIZE, self.SQUARE_SIZE)
-			)
-
-	def run(self, board):
-		running = True
-		square_selected = () # no square is selected, keep track of the last click of the user (tuple: (row, col))
-		player_clicks = [] # keep track of player clicks (two tuples: [(6, 4), (4, 4)])
-		while running:
-			for e in p.event.get():
-				if e.type==p.QUIT:
-					running=False
-				elif e.type == p.MOUSEBUTTONDOWN:
-					location = p.mouse.get_pos() # (x,y) location of mouse
-					column = location[0] // self.SQUARE_SIZE
-					row = location[1] // self.SQUARE_SIZE
-
-
-			self.draw_board()
-			self.draw_pieces(board)
-			self.clock.tick(self.MAX_FPS)
-			p.display.flip()
-
-	def draw_board(self):
-		colors = [p.Color(248,220,180), p.Color(180,134,99)]
-		for row in range(self.DIMENSION):
-			for column in range(self.DIMENSION):
-				color = colors[((row+column)%2)]
-				p.draw.rect(
-					self.screen,
-					color,
-					p.Rect(
-						column * self.SQUARE_SIZE,
-						row * self.SQUARE_SIZE,
-						self.SQUARE_SIZE,
-						self.SQUARE_SIZE
-					)
-				)
-
-	def draw_pieces(self, board):
+	def _draw_pieces(self, board):
 		"""
 		Split into separate methods as we may want to do piece highlighting
 		"""
 		for row in range(self.DIMENSION):
-			for column in range(self.DIMENSION):
-				piece = board.get_piece_name_from_board_dim(row, column)
+			for col in range(self.DIMENSION):
+				piece = board.get_piece_name_from_board_dim(row, col)
 				if piece != " ":
 					self.screen.blit(
 						self.IMAGES[piece],
 						p.Rect(
-							column * self.SQUARE_SIZE,
+							col * self.SQUARE_SIZE,
 							row * self.SQUARE_SIZE,
 							self.SQUARE_SIZE * 0.8,
 							self.SQUARE_SIZE * 0.8
 						)
 					)
+
+	def _get_x_coordinate(self):
+		return self.dragger.x_coor // self.SQUARE_SIZE
+
+	def _get_y_coordinate(self):
+		return self.dragger.y_coor // self.SQUARE_SIZE
