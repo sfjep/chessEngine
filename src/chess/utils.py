@@ -4,8 +4,8 @@ Missing utils:
 - BBs TO FEN
 - FEN to pretty board
 """
-from types import MethodType
-from typing import Callable, List
+from chess.moves import SQUARE_XRAYS
+from typing import List
 import chess
 from textwrap import wrap
 
@@ -74,17 +74,17 @@ def get_individual_ones_in_bb(bb_pieces: chess.Bitboard):
 def mask_own_pieces_upward_range(range_bb: chess.Bitboard, own_pieces: chess.Bitboard):
     """
     Input:
-    A range BB (vertical, horizontal or diagonal) from the current position UPWARDS or RIGHTWARD
-    and the BB of squares occupied by current player.
+        A range BB (vertical, horizontal or diagonal) from the current position UPWARDS or RIGHTWARD
+        and the BB of squares occupied by current player.
     Output:
-    BB of squares on that range that the acting player CANNOT move to given its own pieces.
+        BB of squares on that range that the acting player CANNOT move to given its own pieces.
     Note: This function works ONLY for movements from a square i (curreny position) to a square j,
-    where i < j, for i,j in [0..63].
-    Minus 1 flips the sign of all less significant bits from the LEAST significant 1-bit in player occupied
-    For example, subtracting 1 from the binary number 0b1010 gives you 0b1001.
-    If you then take the complement of this mask with ~(bitboard2 | (bitboard2 - 1)),
-    you get a mask with all the bits set above the most significant bit in bitboard2.
-    This mask can be used to filter out any values in bitboard1 that have a bit set below the most significant bit in bitboard2.
+        where i < j, for i,j in [0..63].
+        Minus 1 flips the sign of all less significant bits from the LEAST significant 1-bit in player occupied
+        For example, subtracting 1 from the binary number 0b1010 gives you 0b1001.
+        If you then take the complement of this mask with ~(bitboard2 | (bitboard2 - 1)),
+        you get a mask with all the bits set above the most significant bit in bitboard2.
+        This mask can be used to filter out any values in bitboard1 that have a bit set below the most significant bit in bitboard2.
     """
     _mask = range_bb & own_pieces
     return range_bb & ~((_mask) | (_mask - 1)) | (_mask)
@@ -92,12 +92,12 @@ def mask_own_pieces_upward_range(range_bb: chess.Bitboard, own_pieces: chess.Bit
 def mask_own_pieces_downward_range(range_bb: chess.Bitboard, opponent_pieces: chess.Bitboard):
     """
     Input:
-    A range BB (vertical, horizontal or diagonal) from the current position DOWNWARDS or LEFTWARD
-    and the BB of squares occupied by current player.
+        A range BB (vertical, horizontal or diagonal) from the current position DOWNWARDS or LEFTWARD
+        and the BB of squares occupied by current player.
     Output:
-    BB of squares on that range that the acting player CANNOT move to given its own pieces.
-    Note: This function works ONLY for movements from a square i (curreny position) to a square j,
-    where i > j, for i,j in [0..63].
+        BB of squares on that range that the acting player CANNOT move to given its own pieces.
+        Note: This function works ONLY for movements from a square i (curreny position) to a square j,
+        where i > j, for i,j in [0..63].
     """
     msb_index = (range_bb & opponent_pieces).bit_length()
     if msb_index == 0:
@@ -107,18 +107,24 @@ def mask_own_pieces_downward_range(range_bb: chess.Bitboard, opponent_pieces: ch
         _mask = get_bb_from_square_int(msb_index-1) - 1
         return (_mask | opponent_pieces) & range_bb
 
-def mask_own_pieces_upwards(current_position: chess.Bitboard, move_ranges: List[Callable[[chess.Bitboard], chess.Bitboard]], own_pieces: chess.Bitboard):
+def mask_own_pieces(current_position: chess.Bitboard, directions: List, own_pieces: chess.Bitboard, mask_upwards):
+    """
+    Input:
+        current_position: Bitboard with single 1 that indicates the current position of the piece to be moved.
+        directions: list of string that corresponds to keys in XRAYS dictionary.
+        own_pieces: bitboard with 1s where the player has pieces.
+        mask_upwards: true if we are masking for movements from a square i (curreny position) to a square j,
+        where i > j, for i,j in [0..63].
+    Output:
+        BB of squares on that range that the acting player CANNOT move to given its own pieces.
+    """
+    current_square = get_square_int_from_bb(current_position)
+    masking_function = mask_own_pieces_upward_range if mask_upwards else mask_own_pieces_downward_range
     target_squares = chess.BB_EMPTY
-    for move_range in move_ranges:
-        target_squares |= mask_own_pieces_upward_range(move_range(current_position), own_pieces)
+    for direction in directions:
+        xray = SQUARE_XRAYS[current_square][direction]
+        target_squares |= masking_function(xray, own_pieces)
     return target_squares
-
-def mask_own_pieces_downwards(current_position: chess.Bitboard, move_ranges: List[Callable[[chess.Bitboard], chess.Bitboard]], own_pieces: chess.Bitboard):
-    target_squares = chess.BB_EMPTY
-    for move_range in move_ranges:
-        target_squares |= mask_own_pieces_downward_range(move_range(current_position), own_pieces)
-    return target_squares
-
 
 def dec_to_signed_bin(num: int):
     if num >= 0:

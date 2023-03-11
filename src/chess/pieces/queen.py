@@ -34,20 +34,23 @@ class Queen(Piece):
             target_squares = self.moves_lookup[current_piece_position]
 
             upward_move_ranges = [
-                Moves.move_up_right_full_range,
-                Moves.move_up_left_full_range,
-                Moves.move_up_full_range,
-                Moves.move_right_full_range
+                "UP_RIGHT",
+                "RIGHT",
+                "UP",
+                "UP_LEFT"
             ]
-            target_squares &= ~utils.mask_own_pieces_upwards(current_piece_position, upward_move_ranges, player_occupied)
+            mask_upwards = True
+            target_squares &= ~utils.mask_own_pieces(current_piece_position, upward_move_ranges, player_occupied, mask_upwards)
 
             downward_move_ranges = [
-                Moves.move_down_left_full_range,
-                Moves.move_left_full_range,
-                Moves.move_down_right_full_range,
-                Moves.move_down_full_range
+                "DOWN",
+                "LEFT",
+                "DOWN_LEFT",
+                "DOWN_RIGHT"
             ]
-            target_squares &= ~utils.mask_own_pieces_downwards(current_piece_position, downward_move_ranges, player_occupied)
+            mask_upwards = False
+
+            target_squares &= ~utils.mask_own_pieces(current_piece_position, downward_move_ranges, player_occupied, mask_upwards)
             # moves = moves & ~up_right_mask & ~up_left_mask & ~up_mask
 
             # Mask out downward moves (left, down, downleft)
