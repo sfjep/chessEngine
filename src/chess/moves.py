@@ -138,3 +138,17 @@ class Moves:
     @staticmethod
     def move_2_right_1_down(b: chess.Bitboard) -> chess.Bitboard:
         return Moves.move_2_right(Moves.move_down(b))
+
+
+SQUARE_XRAYS = {}
+for square in chess.SQUARES:
+    SQUARE_XRAYS[square] = {
+        "UP_RIGHT": Moves.move_up_right_full_range(chess.BB_SQUARES[square]),
+        "RIGHT": Moves.move_right_full_range(chess.BB_SQUARES[square]),
+        "DOWN_RIGHT": Moves.move_down_right_full_range(chess.BB_SQUARES[square]),
+        "DOWN": Moves.move_down_full_range(chess.BB_SQUARES[square]),
+        "DOWN_LEFT": Moves.move_down_left_full_range(chess.BB_SQUARES[square]),
+        "LEFT": Moves.move_left_full_range(chess.BB_SQUARES[square]),
+        "UP_LEFT": Moves.move_up_left_full_range(chess.BB_SQUARES[square]),
+        "UP": Moves.move_up_full_range(chess.BB_SQUARES[square]),
+    }
