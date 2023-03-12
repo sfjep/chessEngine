@@ -26,19 +26,16 @@ class King(Piece):
                     | Moves.move_down_right(bb_square)
                 )
 
-                if color == chess.WHITE:
-                    if square == chess.E1:
-                        new_square += Moves.move_2_right(bb_square)
-                        new_square += Moves.move_2_left(bb_square)
-                else:
-                    if square == chess.E8:
-                        new_square += Moves.move_2_right(bb_square)
-                        new_square += Moves.move_2_left(bb_square)
-
+                if (
+                    color == chess.WHITE and square == chess.E1
+                    or color != chess.WHITE and square == chess.E8
+                ):
+                    new_square += Moves.move_2_right(bb_square)
+                    new_square += Moves.move_2_left(bb_square)
                 self.moves_lookup[square, color] = new_square
 
     def get_moves(
-        self, color: bool, opponent_occupied: chess.Bitboard, player_occupied: chess.Bitboard, castle_queenside: bool, castle_kingside: bool
+        self, opponent_occupied: chess.Bitboard, player_occupied: chess.Bitboard, castle_queenside: bool, castle_kingside: bool
     ):
         king_actions = []
         attack_actions = []
