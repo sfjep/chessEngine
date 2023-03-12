@@ -4,6 +4,7 @@ from chess.pieces.piece import Piece
 import chess
 from chess import utils
 from chess.action import Action
+from chess.masking import mask_own_pieces, mask_opponent_pieces
 
 class Rook(Piece):
     def __init__(self, bb, color, piece_type):
@@ -21,31 +22,20 @@ class Rook(Piece):
     def get_moves(self, opponent_occupied: chess.Bitboard, player_occupied: chess.Bitboard):
         rook_actions = []
         attack_actions = []
-        for current_piece_position in utils.get_individual_ones_in_bb(self.bb):
-            moves = chess.BB_EMPTY
-            attack_moves = chess.BB_EMPTY
-            move_generator = [
-                Moves.move_up,
-                Moves.move_down,
-                Moves.move_left,
-                Moves.move_right
+        for current_piece_bb in utils.get_individual_ones_in_bb(self.bb):
+            current_piece_position = utils.get_square_int_from_bb(current_piece_bb)
+            moves = self.moves_lookup[current_piece_position]
+
+            move_ranges = [
+                (["UP", "RIGHT"], True),
+                (["LEFT", "DOWN"], False)
             ]
-            for next_move in move_generator:
-                continue_in_direction = True
-                next_square = current_piece_position
-                while continue_in_direction:
-                    next_square = next_move(next_square)
-                    if not next_square & chess.BB_ALL:
-                        continue_in_direction = False
-                    elif next_square & player_occupied:
-                        continue_in_direction = False
-                    else:
-                        moves |= next_square
-                        if moves & opponent_occupied:
-                            attack_moves |= next_square
-                            continue_in_direction = False
+            for move_range, mask_upwards in move_ranges:
+                moves &= ~mask_own_pieces(current_piece_position, move_range, player_occupied, mask_upwards)
+                moves &= ~mask_opponent_pieces(current_piece_position, move_range, opponent_occupied, mask_upwards)
+
 
             rook_actions += Action.generate_actions(moves, chess.ROOK, current_piece_position)
-            attack_actions += Action.generate_actions(attack_moves, chess.ROOK, current_piece_position)
+            attack_actions += Action.generate_actions(moves & opponent_occupied, chess.ROOK, current_piece_position)
 
         return rook_actions, attack_actions

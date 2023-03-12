@@ -37,23 +37,26 @@ class Pawn(Piece):
                         self.moves_lookup[square, color] = Moves.move_down(bb_square) | Moves.move_down_left(bb_square) | Moves.move_down_right(bb_square)
 
 
-    def get_moves(self, color: bool, opponent_occupied: chess.Bitboard, player_occupied: chess.Bitboard, en_passant_bb: chess.Bitboard):
+    def get_moves(self, opponent_occupied: chess.Bitboard, player_occupied: chess.Bitboard, en_passant_bb: chess.Bitboard):
         pawn_actions = []
         attack_actions = []
 
         for current_piece_position in get_individual_ones_in_bb(self.bb):
-            attack_mask = self.diag_moves(current_piece_position, color) & (opponent_occupied | en_passant_bb)
+            current_piece_index = get_square_int_from_bb(current_piece_position)
+            attack_mask = self.diag_moves(current_piece_position, self.color) & (opponent_occupied | en_passant_bb)
             moves = attack_mask
-            move_up = self.forward_move(current_piece_position, color) & ~(opponent_occupied | player_occupied)
-            if move_up:
+            if move_up := self.forward_move(
+                current_piece_position, self.color
+            ) & ~(opponent_occupied | player_occupied):
                 moves |= move_up
-                if current_piece_position & self.pawn_starting_rank(color):
-                    move_2_up = self.two_forward_move(current_piece_position, color) & ~(opponent_occupied | player_occupied)
-                    if move_2_up:
+                if current_piece_position & self.pawn_starting_rank(self.color):
+                    if move_2_up := self.two_forward_move(
+                        current_piece_position, self.color
+                    ) & ~(opponent_occupied | player_occupied):
                         moves |= move_2_up
 
-            pawn_actions += Action.generate_actions(moves, chess.PAWN, current_piece_position)
-            attack_actions += Action.generate_actions(attack_mask, chess.PAWN, current_piece_position)
+            pawn_actions += Action.generate_actions(moves, chess.PAWN, current_piece_index)
+            attack_actions += Action.generate_actions(attack_mask, chess.PAWN, current_piece_index)
 
         return pawn_actions, attack_actions
 

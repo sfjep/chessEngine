@@ -22,7 +22,6 @@ class Knight(Piece):
             new_square += Moves.move_2_left_1_down(bb_square)
             new_square += Moves.move_2_right_1_up(bb_square)
             new_square += Moves.move_2_right_1_down(bb_square)
-
             self.moves_lookup[square] = new_square
 
 
