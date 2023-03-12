@@ -29,9 +29,8 @@ class Queen(Piece):
         attack_actions = []
 
         # Positions of each individual piece among pieces of this piece type/color
-        piece_positions = utils.get_individual_ones_in_bb(self.bb)
 
-        for current_piece_bb in piece_positions:
+        for current_piece_bb in utils.get_individual_ones_in_bb(self.bb):
             current_piece_position = utils.get_square_int_from_bb(current_piece_bb)
             moves = self.moves_lookup[current_piece_position]
 
