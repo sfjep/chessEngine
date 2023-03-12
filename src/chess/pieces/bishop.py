@@ -5,6 +5,8 @@ from chess.pieces.piece import Piece
 import chess
 from chess.utils import get_individual_ones_in_bb, get_square_int_from_bb
 from chess.action import Action
+from chess.moves import SQUARE_XRAYS
+from chess.masking import mask_own_pieces, mask_opponent_pieces
 
 class Bishop(Piece):
     def __init__(self, bb, color, piece_type):
@@ -12,44 +14,33 @@ class Bishop(Piece):
         self.generate_move_lookup()
 
     def generate_move_lookup(self):
-        self.moves_lookup = {}
-        for square, bb_square in zip(chess.SQUARES, chess.BB_SQUARES):
-            self.moves_lookup[square] = (
-                Moves.move_down_left_full_range(bb_square) |
-                Moves.move_down_right_full_range(bb_square) |
-                Moves.move_up_left_full_range(bb_square) |
-                Moves.move_up_right_full_range(bb_square)
+        self.moves_lookup = {
+            square: (
+                SQUARE_XRAYS[square]["UP_RIGHT"]
+                | SQUARE_XRAYS[square]["UP_LEFT"]
+                | SQUARE_XRAYS[square]["DOWN_RIGHT"]
+                | SQUARE_XRAYS[square]["DOWN_LEFT"]
             )
+            for square in chess.SQUARES
+        }
 
 
     def get_moves(self, opponent_occupied: chess.Bitboard, player_occupied: chess.Bitboard):
         bishop_actions = []
         attack_actions = []
-        for current_piece_position in get_individual_ones_in_bb(self.bb):
-            moves = chess.BB_EMPTY
-            attack_moves = chess.BB_EMPTY
-            move_generator = [
-                Moves.move_down_left_full_range,
-                Moves.move_down_right_full_range,
-                Moves.move_up_left_full_range,
-                Moves.move_up_right_full_range
+        for current_piece_bb in get_individual_ones_in_bb(self.bb):
+            current_piece_position = get_square_int_from_bb(current_piece_bb)
+            moves = self.moves_lookup[current_piece_position]
+
+            move_ranges = [
+                (["UP_RIGHT", "UP_LEFT"], True),
+                (["DOWN_RIGHT", "DOWN_LEFT"], False)
             ]
-            for next_move in move_generator:
-                continue_in_direction = True
-                next_square = current_piece_position
-                while continue_in_direction:
-                    next_square = next_move(next_square)
-                    if not next_square & chess.BB_ALL:
-                        continue_in_direction = False
-                    elif next_square & player_occupied:
-                        continue_in_direction = False
-                    else:
-                        moves |= next_square
-                        if moves & opponent_occupied:
-                            attack_moves |= next_square
-                            continue_in_direction = False
+            for move_range, mask_upwards in move_ranges:
+                moves &= ~mask_own_pieces(current_piece_position, move_range, player_occupied, mask_upwards)
+                moves &= ~mask_opponent_pieces(current_piece_position, move_range, opponent_occupied, mask_upwards)
 
             bishop_actions += Action.generate_actions(moves, chess.BISHOP, current_piece_position)
-            attack_actions += Action.generate_actions(attack_moves, chess.BISHOP, current_piece_position)
+            attack_actions += Action.generate_actions(moves & opponent_occupied, chess.BISHOP, current_piece_position)
 
         return bishop_actions, attack_actions
