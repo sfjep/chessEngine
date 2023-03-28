@@ -25,13 +25,6 @@ class King(Piece):
                     | Moves.move_down_left(bb_square)
                     | Moves.move_down_right(bb_square)
                 )
-
-                if (
-                    color == chess.WHITE and square == chess.E1
-                    or color != chess.WHITE and square == chess.E8
-                ):
-                    new_square += Moves.move_2_right(bb_square)
-                    new_square += Moves.move_2_left(bb_square)
                 self.moves_lookup[square, color] = new_square
 
     def get_moves(
@@ -40,19 +33,42 @@ class King(Piece):
         king_actions = []
         attack_actions = []
 
-        for current_piece_position in get_individual_ones_in_bb(self.bb):
-            sq = get_square_int_from_bb(current_piece_position)
-            moves = self.moves_lookup[sq] & ~player_occupied
-            attack_moves = self.moves_lookup[sq] & ~player_occupied & opponent_occupied
+        for current_piece_position_bb in get_individual_ones_in_bb(self.bb):
+            square_int = get_square_int_from_bb(current_piece_position_bb)
+            moves = self.moves_lookup[(square_int, self.color)] & ~player_occupied
+            moves += self._add_castling(opponent_occupied, player_occupied, castle_queenside, castle_kingside)
+
+            attack_moves = self.moves_lookup[(square_int, self.color)] & ~player_occupied & opponent_occupied
 
             king_actions += Action.generate_actions(
-                moves, chess.KING, current_piece_position
+                moves, chess.KING, square_int
             )
             attack_actions += Action.generate_actions(
-                attack_moves, chess.KING, current_piece_position
+                attack_moves, chess.KING, square_int
             )
 
         return king_actions, attack_actions
+
+    def _add_castling(self, opponent_occupied, player_occupied, castle_queenside: bool, castle_kingside: bool):
+        castles_bb = chess.BB_EMPTY
+        if self.color:
+            if castle_queenside:
+                if (chess.BB_WHITE_QUEENSIDE_CASTLE_SQUARES & (opponent_occupied | player_occupied)) == chess.BB_EMPTY:
+                    castles_bb += chess.BB_C1
+            if castle_kingside:
+                if (chess.BB_WHITE_KINGSIDE_CASTLE_SQUARES & (opponent_occupied | player_occupied)) == chess.BB_EMPTY:
+                    castles_bb += chess.BB_G1
+        else:
+            if castle_queenside:
+                if (chess.BB_BLACK_QUEENSIDE_CASTLE_SQUARES & (opponent_occupied | player_occupied)) == chess.BB_EMPTY:
+                    castles_bb += chess.BB_C8
+            if castle_kingside:
+                if (chess.BB_BLACK_KINGSIDE_CASTLE_SQUARES & (opponent_occupied | player_occupied)) == chess.BB_EMPTY:
+                    castles_bb += chess.BB_G8
+
+        return castles_bb
+
+
 
 
 """
