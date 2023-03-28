@@ -11,15 +11,9 @@ class Pawn(Piece):
         self.generate_move_lookup()
 
     def generate_move_lookup(self):
-        '''
-        Pawns are color dependent as white moves up the board and black moves down the board
-        Never to be needed
-        '''
         self.moves_lookup = {}
-
         for color in chess.COLORS:
             for square, bb_square in zip(chess.SQUARES, chess.BB_SQUARES):
-
                 if color == chess.WHITE:
                     if (chess.BB_SQUARES[square] & chess.BB_RANK_1) != 0:
                         self.moves_lookup[square, color] = chess.BB_EMPTY
@@ -27,7 +21,6 @@ class Pawn(Piece):
                         self.moves_lookup[square, color] = Moves.move_up(bb_square) | Moves.move_2_up(bb_square) | Moves.move_up_left(bb_square) | Moves.move_up_right(bb_square)
                     else:
                         self.moves_lookup[square, color] = Moves.move_up(bb_square) | Moves.move_up_left(bb_square) | Moves.move_up_right(bb_square)
-
                 else:
                     if (chess.BB_SQUARES[square] & chess.BB_RANK_8) != 0:
                         self.moves_lookup[square, color] = chess.BB_EMPTY
@@ -45,14 +38,10 @@ class Pawn(Piece):
             current_piece_index = get_square_int_from_bb(current_piece_position)
             attack_mask = self.diag_moves(current_piece_position, self.color) & (opponent_occupied | en_passant_bb)
             moves = attack_mask
-            if move_up := self.forward_move(
-                current_piece_position, self.color
-            ) & ~(opponent_occupied | player_occupied):
+            if move_up := self.forward_move(current_piece_position, self.color) & ~(opponent_occupied | player_occupied):
                 moves |= move_up
                 if current_piece_position & self.pawn_starting_rank(self.color):
-                    if move_2_up := self.two_forward_move(
-                        current_piece_position, self.color
-                    ) & ~(opponent_occupied | player_occupied):
+                    if move_2_up := self.two_forward_move(current_piece_position, self.color) & ~(opponent_occupied | player_occupied):
                         moves |= move_2_up
 
             pawn_actions += Action.generate_actions(moves, chess.PAWN, current_piece_index)
