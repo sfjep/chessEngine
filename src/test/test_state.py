@@ -4,7 +4,7 @@ from src.chess.state import State
 from src.chess.fen import Fen
 
 class StateTest(unittest.TestCase):
-    
+
     def test_get_state_from_fen_en_passant(self):
         state = State("rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq e3 1 2")
         self.assertEqual(state.board.WP.bb, chess.BB_RANK_2 ^ chess.BB_E2 | chess.BB_E4)
@@ -39,7 +39,7 @@ class StateTest(unittest.TestCase):
         print(fen)
         self.assertEqual(
            fen,
-           "rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq e3 1 2" 
+           "rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq e3 1 2"
         )
 
     def test_get_fen_from_state_2(self):
@@ -47,7 +47,7 @@ class StateTest(unittest.TestCase):
         fen = Fen.get_fen_from_state(state)
         self.assertEqual(
            fen,
-           "rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R w - - 0 1" 
+           "rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R w - - 0 1"
         )
 
 if __name__ == '__main__':
