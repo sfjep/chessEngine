@@ -82,12 +82,7 @@ class State:
         if self.turn == chess.WHITE:
             for piece in self.board_white_pieces:  # HECK
                 if piece.piece_type == chess.PAWN:
-                    moves, attacks = piece.get_moves(
-                        chess.WHTIE,
-                        self.board.black_occupied,
-                        self.board.white_occupied,
-                        self.en_passant_capture_square,
-                    )
+                    moves, attacks = piece.get_moves(self)
                 elif piece.piece_type == chess.KING:
                     moves, attacks = piece.get_moves(
                         chess.WHITE,
