@@ -4,7 +4,7 @@ Missing utils:
 - BBs TO FEN
 - FEN to pretty board
 """
-from chess.moves import SQUARE_XRAYS
+from chess.moves.move_utils import SQUARE_XRAYS
 import chess
 from textwrap import wrap
 

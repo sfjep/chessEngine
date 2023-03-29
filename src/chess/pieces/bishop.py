@@ -1,11 +1,8 @@
-from typing import Dict, Tuple
 import chess
-from chess.moves import MoveUtils
 from chess.pieces.piece import Piece
 import chess
-from chess.utils import get_individual_ones_in_bb, get_square_int_from_bb
+from chess.utils import get_individual_ones_in_bb, get_square_int_from_bb, get_bb_diagonals_from_square_int
 from chess.action import Action
-from chess.moves import SQUARE_XRAYS
 from chess.masking import mask_own_pieces, mask_opponent_pieces
 
 class Bishop(Piece):
@@ -15,12 +12,7 @@ class Bishop(Piece):
 
     def generate_move_lookup(self):
         self.moves_lookup = {
-            square: (
-                SQUARE_XRAYS[square]["UP_RIGHT"]
-                | SQUARE_XRAYS[square]["UP_LEFT"]
-                | SQUARE_XRAYS[square]["DOWN_RIGHT"]
-                | SQUARE_XRAYS[square]["DOWN_LEFT"]
-            )
+            square: get_bb_diagonals_from_square_int(square)
             for square in chess.SQUARES
         }
 

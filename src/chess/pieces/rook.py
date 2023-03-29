@@ -1,5 +1,3 @@
-from typing import Dict, Tuple
-from chess.moves import MoveUtils
 from chess.pieces.piece import Piece
 import chess
 from chess import utils
@@ -11,7 +9,7 @@ class Rook(Piece):
         super().__init__(bb, color, piece_type)
         self.generate_move_lookup()
 
-    def generate_move_lookup(self) -> Dict[Tuple[chess.Square, chess.Color], chess.Bitboard]:
+    def generate_move_lookup(self):
         self.moves_lookup = {}
         for square, bb_square in zip(chess.SQUARES, chess.BB_SQUARES):
             self.moves_lookup[square] = (

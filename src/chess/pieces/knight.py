@@ -1,5 +1,4 @@
-from typing import Dict
-from chess.moves import MoveUtils
+from chess.moves.move_utils import MoveUtils
 from chess.pieces.piece import Piece
 import chess
 from chess.utils import get_individual_ones_in_bb, get_square_int_from_bb
