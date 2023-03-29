@@ -1,5 +1,5 @@
 from typing import Dict, Tuple
-from chess.moves import Moves
+from chess.moves import MoveUtils
 from chess.pieces.piece import Piece
 import chess
 from chess import utils
@@ -19,7 +19,7 @@ class Rook(Piece):
                 utils.get_file_from_bb(bb_square)) & ~bb_square
 
 
-    def get_moves(self, opponent_occupied: chess.Bitboard, player_occupied: chess.Bitboard):
+    def get_moves(self, state):
         rook_actions = []
         attack_actions = []
         for current_piece_bb in utils.get_individual_ones_in_bb(self.bb):
@@ -31,11 +31,11 @@ class Rook(Piece):
                 (["LEFT", "DOWN"], False)
             ]
             for move_range, mask_upwards in move_ranges:
-                moves &= ~mask_own_pieces(current_piece_position, move_range, player_occupied, mask_upwards)
-                moves &= ~mask_opponent_pieces(current_piece_position, move_range, opponent_occupied, mask_upwards)
+                moves &= ~mask_own_pieces(current_piece_position, move_range, state.player_occupied, mask_upwards)
+                moves &= ~mask_opponent_pieces(current_piece_position, move_range, state.opponent_occupied, mask_upwards)
 
 
             rook_actions += Action.generate_actions(moves, chess.ROOK, current_piece_position)
-            attack_actions += Action.generate_actions(moves & opponent_occupied, chess.ROOK, current_piece_position)
+            attack_actions += Action.generate_actions(moves & state.opponent_occupied, chess.ROOK, current_piece_position)
 
         return rook_actions, attack_actions

@@ -1,6 +1,6 @@
 from typing import Dict, Tuple
 import chess
-from chess.moves import Moves
+from chess.moves import MoveUtils
 from chess.pieces.piece import Piece
 import chess
 from chess.utils import get_individual_ones_in_bb, get_square_int_from_bb
@@ -25,7 +25,7 @@ class Bishop(Piece):
         }
 
 
-    def get_moves(self, opponent_occupied: chess.Bitboard, player_occupied: chess.Bitboard):
+    def get_moves(self, state):
         bishop_actions = []
         attack_actions = []
         for current_piece_bb in get_individual_ones_in_bb(self.bb):
@@ -37,10 +37,10 @@ class Bishop(Piece):
                 (["DOWN_RIGHT", "DOWN_LEFT"], False)
             ]
             for move_range, mask_upwards in move_ranges:
-                moves &= ~mask_own_pieces(current_piece_position, move_range, player_occupied, mask_upwards)
-                moves &= ~mask_opponent_pieces(current_piece_position, move_range, opponent_occupied, mask_upwards)
+                moves &= ~mask_own_pieces(current_piece_position, move_range, state.player_occupied, mask_upwards)
+                moves &= ~mask_opponent_pieces(current_piece_position, move_range, state.opponent_occupied, mask_upwards)
 
             bishop_actions += Action.generate_actions(moves, chess.BISHOP, current_piece_position)
-            attack_actions += Action.generate_actions(moves & opponent_occupied, chess.BISHOP, current_piece_position)
+            attack_actions += Action.generate_actions(moves & state.opponent_occupied, chess.BISHOP, current_piece_position)
 
         return bishop_actions, attack_actions

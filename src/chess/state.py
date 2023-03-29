@@ -57,6 +57,19 @@ class State:
         self.halfmove_count = int(halfmove_clock)
         self.move_count = int(fullmove_number)
 
+        # set player_occupied
+        if self.turn == chess.WHITE:
+            self.player_occupied = self.board.white_occupied
+        else:
+            self.player_occupied = self.board.black_occupied
+
+        # set opponent_ocupied
+        if self.turn == chess.WHITE:
+            self.opponent_occupied = self.board.black_occupied
+        else:
+            self.opponent_occupied = self.board.white_occupied
+
+
     def get_possible_actions(self):
         """
         Generate list of actions possible in state

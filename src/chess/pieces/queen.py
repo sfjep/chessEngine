@@ -1,6 +1,6 @@
 from typing import Dict, Tuple
 import chess
-from chess.moves import Moves
+from chess.moves import MoveUtils
 from chess.pieces.piece import Piece
 import chess.utils as utils
 from chess.action import Action
@@ -17,14 +17,11 @@ class Queen(Piece):
         for square, bb_square in zip(chess.SQUARES, chess.BB_SQUARES):
             self.moves_lookup[square] = (
                 ((utils.get_rank_from_bb(bb_square) | utils.get_file_from_bb(bb_square)) & ~bb_square) |
-                SQUARE_XRAYS[square]["UP_RIGHT"] |
-                SQUARE_XRAYS[square]["UP_LEFT"] |
-                SQUARE_XRAYS[square]["DOWN_RIGHT"] |
-                SQUARE_XRAYS[square]["DOWN_LEFT"]
+                utils.get_bb_diagonals_from_square_int(square)
             )
 
 
-    def get_moves(self, opponent_occupied: chess.Bitboard, player_occupied: chess.Bitboard):
+    def get_moves(self, state):
         queen_actions = []
         attack_actions = []
 
@@ -39,12 +36,12 @@ class Queen(Piece):
                 (["DOWN_RIGHT", "DOWN", "LEFT", "DOWN_LEFT"], False)
             ]
             for move_range, mask_upwards in move_ranges:
-                moves &= ~mask_own_pieces(current_piece_position, move_range, player_occupied, mask_upwards)
-                moves &= ~mask_opponent_pieces(current_piece_position, move_range, opponent_occupied, mask_upwards)
+                moves &= ~mask_own_pieces(current_piece_position, move_range, state.player_occupied, mask_upwards)
+                moves &= ~mask_opponent_pieces(current_piece_position, move_range, state.opponent_occupied, mask_upwards)
 
 
             queen_actions += Action.generate_actions(moves, chess.QUEEN, current_piece_position)
-            attack_actions += Action.generate_actions(moves & opponent_occupied, chess.QUEEN, current_piece_position)
+            attack_actions += Action.generate_actions(moves & state.opponent_occupied, chess.QUEEN, current_piece_position)
 
         return queen_actions, attack_actions
 

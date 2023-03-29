@@ -76,3 +76,11 @@ def dec_to_signed_bin(num: int):
     else:
         # Two's complement
         return bin((1 << 64) + num)[2:]
+
+def get_bb_diagonals_from_square_int(square: int):
+    return (
+        SQUARE_XRAYS[square]["UP_RIGHT"] |
+        SQUARE_XRAYS[square]["UP_LEFT"] |
+        SQUARE_XRAYS[square]["DOWN_RIGHT"] |
+        SQUARE_XRAYS[square]["DOWN_LEFT"]
+    )
