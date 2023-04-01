@@ -27,7 +27,7 @@ class Board:
     pieces: list
 
     def __init__(self, fen_board: str = None):
-        self._create_instance_of_each_piece()
+        self._create_pieces()
 
         if not fen_board:
             self._set_board_to_start_position()
@@ -37,7 +37,7 @@ class Board:
         self._set_helper_bitboard()
         self._get_board_chararray()
 
-    def _create_instance_of_each_piece(self):
+    def _create_pieces(self):
         self.WP = Pieces.Pawn(chess.BB_EMPTY, chess.WHITE, chess.PAWN)
         self.WR = Pieces.Rook(chess.BB_EMPTY, chess.WHITE, chess.ROOK)
         self.WN = Pieces.Knight(chess.BB_EMPTY, chess.WHITE, chess.KNIGHT)
