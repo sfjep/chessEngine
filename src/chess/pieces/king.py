@@ -2,7 +2,7 @@ from chess.pieces.piece import Piece
 import chess
 from chess.moves.move_utils import MoveUtils
 from chess.utils import get_individual_ones_in_bb, get_square_int_from_bb
-from chess.action import Action
+from chess.action import Action, ActionType
 
 
 class King(Piece):
@@ -38,10 +38,10 @@ class King(Piece):
             attack_moves = self.moves_lookup[(square_int, self.color)] & ~state.player_occupied & state.opponent_occupied
 
             king_actions += Action.generate_actions(
-                moves, chess.KING, square_int
+                moves, chess.KING, square_int, ActionType.MOVE
             )
             attack_actions += Action.generate_actions(
-                attack_moves, chess.KING, square_int
+                attack_moves, chess.KING, square_int, ActionType.ATTACK
             )
 
         return king_actions, attack_actions

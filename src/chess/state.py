@@ -1,8 +1,9 @@
+from copy import deepcopy
 import chess
 from chess.board import Board
 from dataclasses import dataclass
 from typing import Optional, Tuple
-
+from chess.action import Action
 
 @dataclass
 class State:
@@ -65,41 +66,45 @@ class State:
         else:
             self.opponent_occupied = self.board.white_occupied
 
+    def apply_action(self, action: Action):
+        new_state = deepcopy(self)
+        new_state.parent = self
+        new_state.board.apply_action(action)
 
-    def get_possible_actions(self):
-        """
-        Generate list of actions possible in state
-            Check which color is playing
-            Iterate through all pieces of color
-            Take index of piece and get moves lookup
-            Convert possible moves to list of
-        """
-        possible_actions = []
-        if self.turn == chess.WHITE:
-            for piece in self.board_white_pieces:  # HECK
-                if piece.piece_type == chess.PAWN:
-                    moves, attacks = piece.get_moves(self)
-                elif piece.piece_type == chess.KING:
-                    moves, attacks = piece.get_moves(
-                        chess.WHITE,
 
-                    )
-                else:
-                    moves, attacks = piece.get_moves(
-                        self.board.white_occupied, self.board.black_occupied
-                    )
-                possible_actions.append(moves)
-        else:
-            for piece in self.board_black_pieces:
-                if piece.piece_type == chess.PAWN:
-                    moves, attacks = piece.get_moves(
-                        chess.BLACK,
-                        self.board.black_occupied,
-                        self.board.white_occupied,
-                        self.en_passant_capture_square,
-                    )
-                else:
-                    moves, attacks = piece.get_moves(
-                        self.board.black_occupied, self.board.white_occupied
-                    )
-                possible_actions.append(moves)
+
+
+    # def get_possible_actions(self):
+    #     """
+    #     Generate list of actions possible in state
+    #         Check which color is playing
+    #         Iterate through all pieces of color
+    #         Take index of piece and get moves lookup
+    #         Convert possible moves to list of
+    #     """
+    #     possible_actions = []
+    #     if self.turn == chess.WHITE:
+    #         for piece in self.board_white_pieces:  # HECK
+    #             if piece.piece_type == chess.PAWN:
+    #                 moves, attacks = piece.get_moves(self)
+    #             elif piece.piece_type == chess.KING:
+    #                 moves, attacks = piece.get_moves(chess.WHITE)
+    #             else:
+    #                 moves, attacks = piece.get_moves(
+    #                     self.board.white_occupied, self.board.black_occupied
+    #                 )
+    #             possible_actions.append(moves)
+    #     else:
+    #         for piece in self.board_black_pieces:
+    #             if piece.piece_type == chess.PAWN:
+    #                 moves, attacks = piece.get_moves(
+    #                     chess.BLACK,
+    #                     self.board.black_occupied,
+    #                     self.board.white_occupied,
+    #                     self.en_passant_capture_square,
+    #                 )
+    #             else:
+    #                 moves, attacks = piece.get_moves(
+    #                     self.board.black_occupied, self.board.white_occupied
+    #                 )
+    #             possible_actions.append(moves)

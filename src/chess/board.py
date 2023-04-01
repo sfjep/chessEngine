@@ -1,8 +1,9 @@
 import numpy as np
 import chess
+from chess.action import Action, ActionType
 import chess.pieces as Pieces
 from chess import Bitboard
-from chess.utils import get_individual_ones_in_bb, get_square_int_from_bb
+from chess.utils import get_individual_ones_in_bb, get_square_int_from_bb, get_bb_from_square_int
 from chess.pieces.piece import Piece
 
 class Board:
@@ -140,6 +141,26 @@ class Board:
 
     def square_has_piece(self, row: int, column: int):
         return self.board_arr[row][column] != " "
+
+    def apply_action(self, action: Action):
+        player_pieces = self.white_pieces if action.player == chess.WHITE else self.black_pieces
+        for piece in player_pieces:
+            if piece.type == action.piece_type:
+                . If yes, remove piece from current location
+                if piece.bb & get_bb_from_square_int(action.origin_square) == 0:
+                    raise Exception(f"{chess.COLOR_NAMES[piece.color]} {piece.type} is not in origin square specified in {action}.")
+                piece.bb = piece.bb & ~get_bb_from_square_int(action.origin_square)
+                # check destination square is not occupied
+                if board.pieces
+                # move piece to new square
+
+
+    def validate_action(self, piece, action: Action):
+        # check piece to move is in expected location
+        if piece.bb & get_bb_from_square_int(action.origin_square) == 0:
+            raise Exception(f"{chess.COLOR_NAMES[piece.color]} {piece.type} is not in origin square specified in {action}.")
+
+        if action.type == ActionType.MOVE and self.all_occupied &
 
 class InvalidFenException(Exception):
     pass
