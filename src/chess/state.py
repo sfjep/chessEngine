@@ -1,7 +1,7 @@
 import chess
 from chess.board import Board
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Tuple
 
 
 @dataclass
@@ -10,14 +10,10 @@ class State:
     fen: str
     board: Board
     turn: bool
-    white_can_castle_kingside: bool
-    white_can_castle_queenside: bool
-    black_can_castle_kingside: bool
-    black_can_castle_queenside: bool
-    white_king_in_check: bool
-    white_king_checkmate: bool
-    black_king_in_check: bool
-    black_king_checkmate: bool
+    can_castle_kingside: Tuple(bool, bool)
+    can_castle_queenside: Tuple(bool, bool)
+    in_check: Tuple(bool, bool)
+    in_checkmate: Tuple(bool, bool)
     en_passant_pawn_position: chess.Bitboard
     en_passant_capture_square: chess.Bitboard  # Destination square of attacking piece
     halfmove_count: int
@@ -42,10 +38,8 @@ class State:
         self.board = Board(fen_board)
         self.turn = player == "w"
 
-        self.white_can_castle_kingside = "K" in castling_rights
-        self.white_can_castle_queenside = "Q" in castling_rights
-        self.black_can_castle_kingside = "k" in castling_rights
-        self.black_can_castle_queenside = "q" in castling_rights
+        self.can_castle_kingside = ("k" in castling_rights, "K" in castling_rights)
+        self.can_castle_queenside = ("q" in castling_rights, "Q" in castling_rights)
 
         if en_passant != "-":
             self.en_passant_capture_square = chess.BB_SQUARES[
@@ -56,6 +50,8 @@ class State:
 
         self.halfmove_count = int(halfmove_clock)
         self.move_count = int(fullmove_number)
+
+        self.occupied_co = (self.board.black_occupied, self.board.white_occupied)
 
         # set player_occupied
         if self.turn == chess.WHITE:
