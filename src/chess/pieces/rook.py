@@ -1,7 +1,7 @@
 from chess.pieces.piece import Piece
 import chess
 from chess import utils
-from chess.action import Action
+from chess.action import Action, ActionType
 from chess.masking import mask_own_pieces, mask_opponent_pieces
 
 class Rook(Piece):
@@ -33,7 +33,7 @@ class Rook(Piece):
                 moves &= ~mask_opponent_pieces(current_piece_position, move_range, state.opponent_occupied, mask_upwards)
 
 
-            rook_actions += Action.generate_actions(moves, chess.ROOK, current_piece_position)
-            attack_actions += Action.generate_actions(moves & state.opponent_occupied, chess.ROOK, current_piece_position)
+            rook_actions += Action.generate_actions(moves, chess.ROOK, current_piece_position, ActionType.MOVE)
+            attack_actions += Action.generate_actions(moves & state.opponent_occupied, chess.ROOK, current_piece_position, ActionType.ATTACK)
 
         return rook_actions, attack_actions

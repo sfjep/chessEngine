@@ -1,5 +1,8 @@
 from abc import ABC, abstractmethod
 import chess
+import chess.utils as utils
+from chess.masking import mask_own_pieces, mask_opponent_pieces
+from chess.action import Action
 
 class Piece(ABC):
 
@@ -18,3 +21,21 @@ class Piece(ABC):
     @abstractmethod
     def generate_move_lookup(self):
         pass
+
+    def get_range_moves(self, state, moves_lookup, move_ranges: list):
+        actions = []
+        attacks = []
+
+        for piece_bb in utils.get_individual_ones_in_bb(self.bb):
+            piece_pos_int = utils.get_square_int_from_bb(piece_bb)
+            moves = moves_lookup[piece_pos_int]
+
+            for move_range, mask_upwards in move_ranges:
+                moves &= ~mask_own_pieces(piece_pos_int, move_range, state.player_occupied, mask_upwards)
+                moves &= ~mask_opponent_pieces(piece_pos_int, move_range, state.opponent_occupied, mask_upwards)
+
+            actions += Action.generate_actions(moves, self.piece_type, piece_pos_int)
+            attacks += Action.generate_actions(moves & state.opponent_occupied, self.piece_type, piece_pos_int)
+
+        return actions, attacks
+

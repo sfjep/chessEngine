@@ -19,26 +19,27 @@ class Queen(Piece):
 
 
     def get_moves(self, state):
-        queen_actions = []
-        attack_actions = []
+        move_ranges = [
+            (["UP_RIGHT", "RIGHT", "UP", "UP_LEFT"], True),
+            (["DOWN_RIGHT", "DOWN", "LEFT", "DOWN_LEFT"], False)
+        ]
+        return self.get_range_moves(state, self.moves_lookup, move_ranges)
+        # queen_actions = []
+        # attack_actions = []
 
-        # Positions of each individual piece among pieces of this piece type/color
+        # # Positions of each individual piece among pieces of this piece type/color
 
-        for current_piece_bb in utils.get_individual_ones_in_bb(self.bb):
-            current_piece_position = utils.get_square_int_from_bb(current_piece_bb)
-            moves = self.moves_lookup[current_piece_position]
+        # for current_piece_bb in utils.get_individual_ones_in_bb(self.bb):
+        #     current_piece_position = utils.get_square_int_from_bb(current_piece_bb)
+        #     moves = self.moves_lookup[current_piece_position]
 
-            move_ranges = [
-                (["UP_RIGHT", "RIGHT", "UP", "UP_LEFT"], True),
-                (["DOWN_RIGHT", "DOWN", "LEFT", "DOWN_LEFT"], False)
-            ]
-            for move_range, mask_upwards in move_ranges:
-                moves &= ~mask_own_pieces(current_piece_position, move_range, state.player_occupied, mask_upwards)
-                moves &= ~mask_opponent_pieces(current_piece_position, move_range, state.opponent_occupied, mask_upwards)
+        #     for move_range, mask_upwards in move_ranges:
+        #         moves &= ~mask_own_pieces(current_piece_position, move_range, state.player_occupied, mask_upwards)
+        #         moves &= ~mask_opponent_pieces(current_piece_position, move_range, state.opponent_occupied, mask_upwards)
 
 
-            queen_actions += Action.generate_actions(moves, chess.QUEEN, current_piece_position)
-            attack_actions += Action.generate_actions(moves & state.opponent_occupied, chess.QUEEN, current_piece_position)
+        #     queen_actions += Action.generate_actions(moves, chess.QUEEN, current_piece_position)
+        #     attack_actions += Action.generate_actions(moves & state.opponent_occupied, chess.QUEEN, current_piece_position)
 
-        return queen_actions, attack_actions
+        # return queen_actions, attack_actions
 

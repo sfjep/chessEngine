@@ -5,7 +5,7 @@ from chess.gui.gui import GUI
 
 def main():
     state = State("rQbqk2r/pp1ppppp/8/2pPB2P/1P1pP3/8/PPP3PP/R3K1NR w KQkq c6 3 6")
-    queen_actions, attack_actions = state.board.BK.get_moves(
+    queen_actions, attack_actions = state.board.WQ.get_moves(
         state
     )
     print("Pawn actions: ", queen_actions)
