@@ -1,10 +1,7 @@
-from typing import Dict, Tuple
 import chess
-from chess.moves import MoveUtils
 from chess.pieces.piece import Piece
 import chess.utils as utils
 from chess.action import Action
-from chess.moves import SQUARE_XRAYS
 from chess.masking import mask_own_pieces, mask_opponent_pieces
 
 class Queen(Piece):

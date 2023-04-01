@@ -1,6 +1,6 @@
 import chess
 from chess.utils import get_bb_from_square_int
-from chess.moves import SQUARE_XRAYS
+from chess.moves.move_utils import SQUARE_XRAYS
 
 def mask_own_pieces_upward_range(range_bb: chess.Bitboard, own_pieces: chess.Bitboard):
     """

@@ -1,5 +1,4 @@
-from typing import Dict
-from chess.moves import MoveUtils
+from chess.moves.move_utils import MoveUtils
 from chess.pieces.piece import Piece
 import chess
 from chess.utils import get_individual_ones_in_bb, get_square_int_from_bb
@@ -29,13 +28,13 @@ class Knight(Piece):
         knight_actions = []
         attack_actions = []
 
-        for current_piece_position in get_individual_ones_in_bb(self.bb):
-            sq = get_square_int_from_bb(current_piece_position)
+        for piece_bb in get_individual_ones_in_bb(self.bb):
+            sq = get_square_int_from_bb(piece_bb)
             moves = self.moves_lookup[sq] & ~state.player_occupied
             attack_moves = self.moves_lookup[sq] & ~state.player_occupied & state.opponent_occupied
 
-            knight_actions += Action.generate_actions(moves, chess.KNIGHT, current_piece_position)
-            attack_actions += Action.generate_actions(attack_moves, chess.KNIGHT, current_piece_position)
+            knight_actions += Action.generate_actions(moves, chess.KNIGHT, piece_bb)
+            attack_actions += Action.generate_actions(attack_moves, chess.KNIGHT, piece_bb)
 
         return knight_actions, attack_actions
 

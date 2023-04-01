@@ -1,6 +1,5 @@
-from typing import Dict, Tuple
 from chess.pieces.piece import Piece
-from chess.moves import MoveUtils
+from chess.moves.move_utils import MoveUtils
 from chess.utils import get_individual_ones_in_bb, get_square_int_from_bb
 from chess.action import Action
 import chess
@@ -36,7 +35,7 @@ class Pawn(Piece):
 
         for current_piece_position in get_individual_ones_in_bb(self.bb):
             current_piece_index = get_square_int_from_bb(current_piece_position)
-            attack_mask = self.diag_moves(current_piece_position, self.color) & (state.opponent_occupied | state.en_passant_bb)
+            attack_mask = self.diag_moves(current_piece_position, self.color) & (state.opponent_occupied | state.en_passant_capture_square)
             moves = attack_mask
             if move_up := self.forward_move(current_piece_position, self.color) & ~(state.opponent_occupied | state.player_occupied):
                 moves |= move_up
