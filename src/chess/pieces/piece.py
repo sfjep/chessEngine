@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 import chess
 import chess.utils as utils
 from chess.masking import mask_own_pieces, mask_opponent_pieces
-from chess.action import Action
+from chess.action import Action, ActionType
 
 class Piece(ABC):
 
@@ -34,8 +34,8 @@ class Piece(ABC):
                 moves &= ~mask_own_pieces(piece_pos_int, move_range, state.player_occupied, mask_upwards)
                 moves &= ~mask_opponent_pieces(piece_pos_int, move_range, state.opponent_occupied, mask_upwards)
 
-            actions += Action.generate_actions(moves, self.piece_type, piece_pos_int)
-            attacks += Action.generate_actions(moves & state.opponent_occupied, self.piece_type, piece_pos_int)
+            actions += Action.generate_actions(moves, self.piece_type, piece_pos_int, ActionType.MOVE)
+            attacks += Action.generate_actions(moves & state.opponent_occupied, self.piece_type, piece_pos_int, ActionType.ATTACK)
 
         return actions, attacks
 
