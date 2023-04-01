@@ -28,14 +28,14 @@ class Piece(ABC):
 
         for piece_bb in utils.get_individual_ones_in_bb(self.bb):
             piece_pos_int = utils.get_square_int_from_bb(piece_bb)
-            moves = moves_lookup[piece_pos_int]
+            destination_squares = moves_lookup[piece_pos_int]
 
             for move_range, mask_upwards in move_ranges:
-                moves &= ~mask_own_pieces(piece_pos_int, move_range, state.player_occupied, mask_upwards)
-                moves &= ~mask_opponent_pieces(piece_pos_int, move_range, state.opponent_occupied, mask_upwards)
+                destination_squares &= ~mask_own_pieces(piece_pos_int, move_range, state.player_occupied, mask_upwards)
+                destination_squares &= ~mask_opponent_pieces(piece_pos_int, move_range, state.opponent_occupied, mask_upwards)
 
-            actions += Action.generate_actions(moves, self.piece_type, piece_pos_int, ActionType.MOVE)
-            attacks += Action.generate_actions(moves & state.opponent_occupied, self.piece_type, piece_pos_int, ActionType.ATTACK)
+            actions += Action.generate_actions(destination_squares, self.piece_type, piece_pos_int, state.turn, ActionType.MOVE)
+            attacks += Action.generate_actions(destination_squares & state.opponent_occupied, self.piece_type, piece_pos_int, state.turn, ActionType.ATTACK)
 
         return actions, attacks
 

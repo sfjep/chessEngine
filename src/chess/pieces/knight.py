@@ -30,11 +30,11 @@ class Knight(Piece):
 
         for piece_bb in get_individual_ones_in_bb(self.bb):
             sq = get_square_int_from_bb(piece_bb)
-            moves = self.moves_lookup[sq] & ~state.player_occupied
+            destination_squares = self.moves_lookup[sq] & ~state.player_occupied
             attack_moves = self.moves_lookup[sq] & ~state.player_occupied & state.opponent_occupied
 
-            knight_actions += Action.generate_actions(moves, chess.KNIGHT, piece_bb, ActionType.MOVE)
-            attack_actions += Action.generate_actions(attack_moves, chess.KNIGHT, piece_bb, ActionType.ATTACK)
+            knight_actions += Action.generate_actions(destination_squares, chess.KNIGHT, piece_bb, state.turn, ActionType.MOVE)
+            attack_actions += Action.generate_actions(attack_moves, chess.KNIGHT, piece_bb, state.turn, ActionType.ATTACK)
 
         return knight_actions, attack_actions
 

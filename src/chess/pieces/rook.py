@@ -22,18 +22,18 @@ class Rook(Piece):
         attack_actions = []
         for current_piece_bb in utils.get_individual_ones_in_bb(self.bb):
             current_piece_position = utils.get_square_int_from_bb(current_piece_bb)
-            moves = self.moves_lookup[current_piece_position]
+            destination_squares = self.moves_lookup[current_piece_position]
 
             move_ranges = [
                 (["UP", "RIGHT"], True),
                 (["LEFT", "DOWN"], False)
             ]
             for move_range, mask_upwards in move_ranges:
-                moves &= ~mask_own_pieces(current_piece_position, move_range, state.player_occupied, mask_upwards)
-                moves &= ~mask_opponent_pieces(current_piece_position, move_range, state.opponent_occupied, mask_upwards)
+                destination_squares &= ~mask_own_pieces(current_piece_position, move_range, state.player_occupied, mask_upwards)
+                destination_squares &= ~mask_opponent_pieces(current_piece_position, move_range, state.opponent_occupied, mask_upwards)
 
 
-            rook_actions += Action.generate_actions(moves, chess.ROOK, current_piece_position, ActionType.MOVE)
-            attack_actions += Action.generate_actions(moves & state.opponent_occupied, chess.ROOK, current_piece_position, ActionType.ATTACK)
+            rook_actions += Action.generate_actions(destination_squares, chess.ROOK, current_piece_position, state.turn, ActionType.MOVE)
+            attack_actions += Action.generate_actions(destination_squares & state.opponent_occupied, chess.ROOK, current_piece_position, state.turn, ActionType.ATTACK)
 
         return rook_actions, attack_actions

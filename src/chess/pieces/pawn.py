@@ -1,7 +1,7 @@
 from chess.pieces.piece import Piece
 from chess.moves.move_utils import MoveUtils
 from chess.utils import get_individual_ones_in_bb, get_square_int_from_bb
-from chess.action import Action
+from chess.action import Action, ActionType
 import chess
 
 class Pawn(Piece):
@@ -30,23 +30,28 @@ class Pawn(Piece):
 
 
     def get_moves(self, state):
-        pawn_actions = []
-        attack_actions = []
+        pawn_moves = []
+        pawn_attacks = []
+        pawn_en_passants = []
 
         for current_piece_position in get_individual_ones_in_bb(self.bb):
             current_piece_index = get_square_int_from_bb(current_piece_position)
-            attack_mask = self.diag_moves(current_piece_position, self.color) & (state.opponent_occupied | state.en_passant_capture_square)
-            moves = attack_mask
+            attack_squares = self.diag_moves(current_piece_position, self.color) & (state.opponent_occupied | state.en_passant_capture_square)
+            destination_squares = attack_squares
+            en_passant_dest_squares = chess.BB_EMPTY
             if move_up := self.forward_move(current_piece_position, self.color) & ~(state.opponent_occupied | state.player_occupied):
-                moves |= move_up
+                destination_squares |= move_up
                 if current_piece_position & self.pawn_starting_rank(self.color):
                     if move_2_up := self.two_forward_move(current_piece_position, self.color) & ~(state.opponent_occupied | state.player_occupied):
-                        moves |= move_2_up
+                        en_passant_dest_squares |= move_2_up
 
-            pawn_actions += Action.generate_actions(moves, chess.PAWN, current_piece_index)
-            attack_actions += Action.generate_actions(attack_mask, chess.PAWN, current_piece_index)
+            pawn_moves += Action.generate_actions(destination_squares, chess.PAWN, current_piece_index, state.turn, ActionType.MOVE)
+            pawn_attacks += Action.generate_actions(attack_squares, chess.PAWN, current_piece_index, state.turn, ActionType.ATTACK)
+            pawn_en_passants += Action.generate_actions(en_passant_dest_squares, chess.PAWN, current_piece_index, state.turn, ActionType.EN_PASSANT)
 
-        return pawn_actions, attack_actions
+        # TODO: separate action generation for PROMOTIONS
+
+        return pawn_moves, pawn_attacks
 
     @staticmethod
     def pawn_starting_rank(color):

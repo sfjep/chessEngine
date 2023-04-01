@@ -27,24 +27,24 @@ class King(Piece):
                 self.moves_lookup[square, color] = new_square
 
     def get_moves(self, state):
-        king_actions = []
-        attack_actions = []
+        king_moves = []
+        king_attacks = []
 
         for current_piece_position_bb in get_individual_ones_in_bb(self.bb):
             square_int = get_square_int_from_bb(current_piece_position_bb)
-            moves = self.moves_lookup[(square_int, self.color)] & ~state.player_occupied
-            moves += self._add_castling(state)
+            destination_squares = self.moves_lookup[(square_int, self.color)] & ~state.player_occupied
+            destination_squares += self._add_castling(state)
 
-            attack_moves = self.moves_lookup[(square_int, self.color)] & ~state.player_occupied & state.opponent_occupied
+            attack_squares = self.moves_lookup[(square_int, self.color)] & ~state.player_occupied & state.opponent_occupied
 
-            king_actions += Action.generate_actions(
-                moves, chess.KING, square_int, ActionType.MOVE
+            king_moves += Action.generate_actions(
+                destination_squares, chess.KING, square_int, state.turn, ActionType.MOVE
             )
-            attack_actions += Action.generate_actions(
-                attack_moves, chess.KING, square_int, ActionType.ATTACK
+            king_attacks += Action.generate_actions(
+                attack_squares, chess.KING, square_int, state.turn, ActionType.ATTACK
             )
 
-        return king_actions, attack_actions
+        return king_moves, king_attacks
 
     # TODO: simplify - no need for if statement
     def _add_castling(self, state):

@@ -3,7 +3,8 @@ import chess
 from chess.board import Board
 from dataclasses import dataclass
 from typing import Optional, Tuple
-from chess.action import Action
+from chess.action import Action, ActionType
+from chess.utils import get_bb_from_square_int
 
 @dataclass
 class State:
@@ -15,7 +16,6 @@ class State:
     can_castle_queenside: Tuple(bool, bool)
     in_check: Tuple(bool, bool)
     in_checkmate: Tuple(bool, bool)
-    en_passant_pawn_position: chess.Bitboard
     en_passant_capture_square: chess.Bitboard  # Destination square of attacking piece
     halfmove_count: int
     move_count: int
@@ -66,10 +66,28 @@ class State:
         else:
             self.opponent_occupied = self.board.white_occupied
 
+
     def apply_action(self, action: Action):
         new_state = deepcopy(self)
         new_state.parent = self
         new_state.board.apply_action(action)
+        new_state.turn = ~self.turn
+        new_state.halfmove_count = self.halfmove_count + 1
+
+        if self.turn == chess.BLACK:
+            new_state.move_count = self.move_count + 1
+
+        if action.piece_type == chess.KING:
+            new_state.can_castle_kingside[action.player] = False
+            new_state.can_castle_queenside[action.player] = False
+
+        if action.type == ActionType.EN_PASSANT:
+            if action.player == chess.WHITE:
+               new_state.en_passant_capture_square = get_bb_from_square_int(action.origin_square) >> 8
+            else:
+               new_state.en_passant_capture_square = get_bb_from_square_int(action.origin_square) << 8
+
+
 
 
 

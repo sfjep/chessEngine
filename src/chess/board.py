@@ -1,3 +1,4 @@
+from typing import Dict
 import numpy as np
 import chess
 from chess.action import Action, ActionType
@@ -27,6 +28,8 @@ class Board:
     black_pieces: list
     pieces: list
 
+    char_to_piece: Dict[str, Piece]
+
     def __init__(self, fen_board: str = None):
         self._create_pieces()
 
@@ -35,8 +38,24 @@ class Board:
         else:
             self._set_board_from_fen(fen_board)
 
-        self._set_helper_bitboard()
-        self._get_board_chararray()
+        self._set_helper_bitboards()
+        self._set_board_chararray()
+
+        if not char_to_piece:
+            char_to_piece = {
+                    "P": self.WP,
+                    "R": self.WR,
+                    "N": self.WN,
+                    "B": self.WB,
+                    "Q": self.WQ,
+                    "K": self.WK,
+                    "p": self.BP,
+                    "r": self.BR,
+                    "n": self.BN,
+                    "b": self.BB,
+                    "q": self.BQ,
+                    "k": self.BK,
+                }
 
     def _create_pieces(self):
         self.WP = Pieces.Pawn(chess.BB_EMPTY, chess.WHITE, chess.PAWN)
@@ -69,20 +88,6 @@ class Board:
 
 
     def _set_board_from_fen(self, fen_board: str):
-        char_to_piece = {
-            "P": self.WP,
-            "R": self.WR,
-            "N": self.WN,
-            "B": self.WB,
-            "Q": self.WQ,
-            "K": self.WK,
-            "p": self.BP,
-            "r": self.BR,
-            "n": self.BN,
-            "b": self.BB,
-            "q": self.BQ,
-            "k": self.BK,
-        }
         fen = fen_board.split("/")
         if len(fen) != 8:
             raise InvalidFenException
@@ -95,14 +100,14 @@ class Board:
                     if char in blank_spaces:
                         file_count += int(char)
                     else:
-                        char_to_piece[char].bb |= chess.BB_SQUARES[
+                        self.char_to_piece[char].bb |= chess.BB_SQUARES[
                             rank * 8 + file_count
                         ]
                         file_count += 1
                     if file_count > 8:
                         raise InvalidFenException
 
-    def _set_helper_bitboard(self):
+    def _set_helper_bitboards(self):
         self.white_occupied = (
             self.WP.bb | self.WR.bb | self.WB.bb | self.WN.bb | self.WQ.bb | self.WK.bb
         )
@@ -116,7 +121,7 @@ class Board:
 
 
     @staticmethod
-    def piece_squares(bb_pieces: Bitboard):
+    def get_individual_piece_bb(bb_pieces: Bitboard):
         """
         Generates 1 bit bitboards from the decomposition of a bitboard
         """
@@ -125,7 +130,7 @@ class Board:
             yield most_sig_bit
             bb_pieces ^= most_sig_bit
 
-    def _get_board_chararray(self):
+    def _set_board_chararray(self):
         self.board_arr = np.full([8, 8], " ", dtype=object)
         for piece in self.pieces:
             for bb in get_individual_ones_in_bb(piece.bb):
@@ -139,6 +144,11 @@ class Board:
     def get_piece_name_from_board_dim(self, row: int, column: int):
         return self.board_arr[row][column]
 
+    def get_piece_name_from_square(self, square: int):
+        row = square // 8
+        col = square % 8
+        return self.get_piece_name_from_board_dim(row, col)
+
     def square_has_piece(self, row: int, column: int):
         return self.board_arr[row][column] != " "
 
@@ -146,21 +156,41 @@ class Board:
         player_pieces = self.white_pieces if action.player == chess.WHITE else self.black_pieces
         for piece in player_pieces:
             if piece.type == action.piece_type:
-                . If yes, remove piece from current location
-                if piece.bb & get_bb_from_square_int(action.origin_square) == 0:
-                    raise Exception(f"{chess.COLOR_NAMES[piece.color]} {piece.type} is not in origin square specified in {action}.")
-                piece.bb = piece.bb & ~get_bb_from_square_int(action.origin_square)
-                # check destination square is not occupied
-                if board.pieces
+
+                # validate action
+                self.validate_action(piece, action)
+
+                # remove piece from current square
+                piece.bb &= ~get_bb_from_square_int(action.origin_square)
+
                 # move piece to new square
+                piece.bb |= get_bb_from_square_int(action.origin_square)
+
+                # if action is ATTACK, remove opponent piece
+                if action.type == ActionType.ATTACK:
+                    attacked_piece_name = self.get_piece_name_from_square(action.destination_square)
+                    opponent_piece_attacked = self.char_to_piece[attacked_piece_name]
+                    opponent_piece_attacked &= ~get_bb_from_square_int(action.destination_square)
+        
+        # update helper bitboards and chararray
+        self._set_helper_bitboards()
+        self._set_board_chararray()
 
 
-    def validate_action(self, piece, action: Action):
+    def validate_action(self, piece: Piece, action: Action):
         # check piece to move is in expected location
         if piece.bb & get_bb_from_square_int(action.origin_square) == 0:
             raise Exception(f"{chess.COLOR_NAMES[piece.color]} {piece.type} is not in origin square specified in {action}.")
 
-        if action.type == ActionType.MOVE and self.all_occupied &
+        # if action type is MOVE, check destination square is not occupied
+        if action.type == ActionType.MOVE and self.all_occupied & get_bb_from_square_int(action.destination_square) != 0:
+            raise Exception(f"Destination square of {action} is already occupied.")
+
+        # if action type is ATTACK, check destination square is occupied by opponent
+        opponent_pieces = self.black_pieces if action.player == chess.WHITE else self.white_pieces
+        if action.type == ActionType.ATTACK and opponent_pieces & get_bb_from_square_int(action.destination_square) == 0:
+            raise Exception(f"Destination square of attack {action} is not occupied by an opponent piece.")
+    
 
 class InvalidFenException(Exception):
     pass
