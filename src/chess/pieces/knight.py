@@ -1,8 +1,6 @@
+import chess
 from chess.moves.move_utils import MoveUtils
 from chess.pieces.piece import Piece
-import chess
-from chess.utils import get_individual_ones_in_bb, get_square_int_from_bb
-from chess.action import Action, ActionType
 
 class Knight(Piece):
     def __init__(self, bb, color, piece_type):
@@ -23,20 +21,6 @@ class Knight(Piece):
             new_square += MoveUtils.move_2_right_1_down(bb_square)
             self.moves_lookup[square] = new_square
 
-
-    def get_moves(self, state):
-        knight_actions = []
-        attack_actions = []
-
-        for piece_bb in get_individual_ones_in_bb(self.bb):
-            sq = get_square_int_from_bb(piece_bb)
-            destination_squares = self.moves_lookup[sq] & ~state.player_occupied
-            attack_moves = self.moves_lookup[sq] & ~state.player_occupied & state.opponent_occupied
-
-            knight_actions += Action.generate_actions(destination_squares, chess.KNIGHT, piece_bb, state.turn, ActionType.MOVE)
-            attack_actions += Action.generate_actions(attack_moves, chess.KNIGHT, piece_bb, state.turn, ActionType.ATTACK)
-
-        return knight_actions, attack_actions
 
 
 

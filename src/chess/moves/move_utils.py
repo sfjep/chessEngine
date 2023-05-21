@@ -139,6 +139,29 @@ class MoveUtils:
     def move_2_right_1_down(b: chess.Bitboard) -> chess.Bitboard:
         return MoveUtils.move_2_right(MoveUtils.move_down(b))
 
+def pawn_starting_rank(color):
+    if color == chess.WHITE:
+        return chess.BB_RANK_2
+    else:
+        return chess.BB_RANK_7
+
+def pawn_diag_moves(bb, color):
+    if color == chess.WHITE:
+        return MoveUtils.move_up_left(bb) | MoveUtils.move_up_right(bb)
+    else:
+        return MoveUtils.move_down_left(bb) | MoveUtils.move_down_right(bb)
+
+def pawn_one_step(bb, color):
+    if color == chess.WHITE:
+        return MoveUtils.move_up(bb)
+    else:
+        return MoveUtils.move_down(bb)
+
+def pawn_two_step(bb, color):
+    if color == chess.WHITE:
+        return MoveUtils.move_2_up(bb)
+    else:
+        return MoveUtils.move_2_down(bb)
 
 SQUARE_XRAYS = {
     square: {

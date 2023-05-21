@@ -1,8 +1,6 @@
-from chess.pieces.piece import Piece
 import chess
+from chess.pieces.piece import Piece
 from chess.moves.move_utils import MoveUtils
-from chess.utils import get_individual_ones_in_bb, get_square_int_from_bb
-from chess.action import Action, ActionType
 
 
 class King(Piece):
@@ -25,61 +23,3 @@ class King(Piece):
                     | MoveUtils.move_down_right(bb_square)
                 )
                 self.moves_lookup[square, color] = new_square
-
-    def get_moves(self, state):
-        king_moves = []
-        king_attacks = []
-
-        for current_piece_position_bb in get_individual_ones_in_bb(self.bb):
-            square_int = get_square_int_from_bb(current_piece_position_bb)
-            destination_squares = self.moves_lookup[(square_int, self.color)] & ~state.player_occupied
-            destination_squares += self._add_castling(state)
-
-            attack_squares = self.moves_lookup[(square_int, self.color)] & ~state.player_occupied & state.opponent_occupied
-
-            king_moves += Action.generate_actions(
-                destination_squares, chess.KING, square_int, state.turn, ActionType.MOVE
-            )
-            king_attacks += Action.generate_actions(
-                attack_squares, chess.KING, square_int, state.turn, ActionType.ATTACK
-            )
-
-        return king_moves, king_attacks
-
-    # TODO: simplify - no need for if statement
-    def _add_castling(self, state):
-
-        castles_bb = chess.BB_EMPTY
-        if state.turn == chess.WHITE:
-            if state.white_can_castle_queenside:
-                if (chess.BB_WHITE_QUEENSIDE_CASTLE_SQUARES & (state.opponent_occupied | state.player_occupied)) == chess.BB_EMPTY:
-                    castles_bb += chess.BB_C1
-            if state.white_can_castle_kingside:
-                if (chess.BB_WHITE_KINGSIDE_CASTLE_SQUARES & (state.opponent_occupied | state.player_occupied)) == chess.BB_EMPTY:
-                    castles_bb += chess.BB_G1
-        else:
-            if state.black_can_castle_queenside:
-                if (chess.BB_BLACK_QUEENSIDE_CASTLE_SQUARES & (state.opponent_occupied | state.player_occupied)) == chess.BB_EMPTY:
-                    castles_bb += chess.BB_C8
-            if state.black_can_castle_kingside:
-                if (chess.BB_BLACK_KINGSIDE_CASTLE_SQUARES & (state.opponent_occupied | state.player_occupied)) == chess.BB_EMPTY:
-                    castles_bb += chess.BB_G8
-
-        return castles_bb
-
-
-
-
-"""
-In check?
-
-Castles?
-    # Has moved?
-    # Rook moved?
-    # Squares in between occupied?
-    # Squres in between attacked?
-    # In check?
-
-If BB_BLACK_ATTACKED & BB_WHITE_KING != 0:
-    Check pinned
-"""

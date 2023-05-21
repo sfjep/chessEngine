@@ -116,7 +116,34 @@ class Board:
         self.all_occupied = self.white_occupied | self.black_occupied
         self.white_pieces = [self.WP, self.WR, self.WB, self.WN, self.WQ, self.WK]
         self.black_pieces = [self.BP, self.BR, self.BB, self.BN, self.BQ, self.BK]
-        self.pieces = self.white_pieces + self.black_pieces
+        self.all_pieces = self.white_pieces + self.black_pieces
+
+        self.pieces = {
+            chess.WHITE : {
+                "PLAYER_OCCUPIED": self.white_occupied,
+                "OPPONENT_OCCUPIED": self.black_occupied,
+                "PLAYER_PIECES": self.white_pieces,
+                "OPPONENT_PIECES": self.black_pieces,
+                "PAWN" : self.WP,
+                "ROOK" : self.WR,
+                "BISHOP" : self.WB,
+                "KNIGHT" : self.WN,
+                "QUEEN" : self.WQ,
+                "KING" : self.WK
+            },
+            chess.BLACK : {
+                "PLAYER_OCCUPIED": self.black_occupied,
+                "OPPONENT_OCCUPIED": self.white_occupied,
+                "PLAYER_PIECES": self.black_pieces,
+                "OPPONENT_PIECES": self.white_pieces,
+                "PAWN" : self.BP,
+                "ROOK" : self.BR,
+                "BISHOP" : self.BB,
+                "KNIGHT" : self.BN,
+                "QUEEN" : self.BQ,
+                "KING" : self.BK
+            }
+        }
 
 
     @staticmethod
@@ -131,13 +158,13 @@ class Board:
 
     def _set_board_chararray(self):
         self.board_arr = np.full([8, 8], " ", dtype=object)
-        for piece in self.pieces:
+        for piece in self.all_pieces:
             for bb in get_individual_ones_in_bb(piece.bb):
                 idx = get_square_int_from_bb(bb)
                 if piece.color == chess.WHITE:
-                    self.board_arr[idx // 8, idx % 8] = f"W{chess.PIECE_SYMBOLS[piece.piece_type].upper()}"
+                    self.board_arr[idx // 8, idx % 8] = f"W{chess.PIECE_SYMBOLS[piece.type].upper()}"
                 else:
-                    self.board_arr[idx // 8, idx % 8] = f"B{chess.PIECE_SYMBOLS[piece.piece_type].upper()}"
+                    self.board_arr[idx // 8, idx % 8] = f"B{chess.PIECE_SYMBOLS[piece.type].upper()}"
         self.board_arr = np.flip(self.board_arr, axis=0)
 
     def get_piece_name_from_board_dim(self, row: int, column: int):

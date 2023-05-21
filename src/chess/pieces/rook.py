@@ -1,8 +1,6 @@
-from chess.pieces.piece import Piece
 import chess
 from chess import utils
-from chess.action import Action, ActionType
-from chess.masking import mask_own_pieces, mask_opponent_pieces
+from chess.pieces.piece import Piece
 
 class Rook(Piece):
     def __init__(self, bb, color, piece_type):
@@ -15,25 +13,3 @@ class Rook(Piece):
             self.moves_lookup[square] = (
                 utils.get_rank_from_bb(bb_square) |
                 utils.get_file_from_bb(bb_square)) & ~bb_square
-
-
-    def get_moves(self, state):
-        rook_actions = []
-        attack_actions = []
-        for current_piece_bb in utils.get_individual_ones_in_bb(self.bb):
-            current_piece_position = utils.get_square_int_from_bb(current_piece_bb)
-            destination_squares = self.moves_lookup[current_piece_position]
-
-            move_ranges = [
-                (["UP", "RIGHT"], True),
-                (["LEFT", "DOWN"], False)
-            ]
-            for move_range, mask_upwards in move_ranges:
-                destination_squares &= ~mask_own_pieces(current_piece_position, move_range, state.player_occupied, mask_upwards)
-                destination_squares &= ~mask_opponent_pieces(current_piece_position, move_range, state.opponent_occupied, mask_upwards)
-
-
-            rook_actions += Action.generate_actions(destination_squares, chess.ROOK, current_piece_position, state.turn, ActionType.MOVE)
-            attack_actions += Action.generate_actions(destination_squares & state.opponent_occupied, chess.ROOK, current_piece_position, state.turn, ActionType.ATTACK)
-
-        return rook_actions, attack_actions

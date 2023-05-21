@@ -66,7 +66,7 @@ def mask_opponent_pieces_upward(range_bb: chess.Bitboard, opponent_pieces: chess
         where i < j, for i,j in [0..63].
     """
     _mask = range_bb & opponent_pieces
-    return _mask & (_mask - 1)
+    return range_bb & ~(_mask & ~(_mask - 1))
 
 def mask_opponent_pieces_downward_range(range_bb: chess.Bitboard, opponent_pieces: chess.Bitboard):
     """
@@ -92,3 +92,4 @@ def mask_opponent_pieces(current_square: int, directions: list, opponent_pieces:
         xray = SQUARE_XRAYS[current_square][direction]
         target_squares |= masking_function(xray, opponent_pieces)
     return target_squares
+

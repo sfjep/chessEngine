@@ -1,8 +1,10 @@
+from dataclasses import dataclass
 from enum import Enum
+
 import chess
+from chess.pieces.piece import Piece
 from chess.utils import get_individual_ones_in_bb, get_square_int_from_bb
 
-from dataclasses import dataclass
 
 
 class ActionType(Enum):
@@ -10,6 +12,7 @@ class ActionType(Enum):
     EN_PASSANT = 1
     ATTACK = 2
     PROMOTION = 3
+    CASTLING = 4
 
 @dataclass
 class Action:
@@ -20,26 +23,25 @@ class Action:
     type: ActionType
 
     def __repr__(self):
-        return f"""\nAction({chess.PIECE_SYMBOLS[self.piece_type]} {chess.SQUARE_NAMES[self.origin_square]} - {chess.SQUARE_NAMES[self.destination_square]})"""
+        return f"""\nAction({self.type} - {chess.PIECE_SYMBOLS[self.piece_type]} {chess.SQUARE_NAMES[self.origin_square]} - {chess.SQUARE_NAMES[self.destination_square]})"""
 
     @staticmethod
-    def generate_actions(moves: chess.Bitboard, piece_type: int, current_square: int, player: chess.Color, type: ActionType):
+    def generate_actions(moves: chess.Bitboard, piece: Piece, origin_square: int, type: ActionType):
         """
         Params
             moves : bitboard containing destination squares of the piece to move
-            piece_type : piece type int
-            current_piece_position : bitboard containint current position of piece to move
-            player: player performing the action
+            piece : piece object
+            origin_square : bitboard containint current position of piece to move
             action_type : type of action (move, attack, promotion)
         Returns:
             A list of 'Action' instances representing each source and destination square for piece to move.
         """
         return [
             Action(
-                piece_type,
-                current_square,
+                piece.type,
+                origin_square,
                 get_square_int_from_bb(new_piece_position),
-                player,
+                piece.color,
                 type
             )
             for new_piece_position in get_individual_ones_in_bb(moves)
