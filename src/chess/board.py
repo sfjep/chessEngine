@@ -1,11 +1,11 @@
-from typing import Dict
 import numpy as np
+from typing import Dict
+
 import chess
-from chess.action import Action, ActionType
 import chess.pieces as Pieces
-from chess import Bitboard
-from chess.utils import get_individual_ones_in_bb, get_square_int_from_bb, get_bb_from_square_int
+from chess.action import Action, ActionType
 from chess.pieces.piece import Piece
+from chess.utils import get_individual_ones_in_bb, get_square_int_from_bb, get_bb_from_square_int
 
 class Board:
     WP: Piece
@@ -33,6 +33,21 @@ class Board:
     def __init__(self, fen_board: str = None):
         self._create_pieces()
 
+        self.char_to_piece = {
+            "P": self.WP,
+            "R": self.WR,
+            "N": self.WN,
+            "B": self.WB,
+            "Q": self.WQ,
+            "K": self.WK,
+            "p": self.BP,
+            "r": self.BR,
+            "n": self.BN,
+            "b": self.BB,
+            "q": self.BQ,
+            "k": self.BK,
+        }
+
         if not fen_board:
             self._set_board_to_start_position()
         else:
@@ -40,22 +55,6 @@ class Board:
 
         self._set_helper_bitboards()
         self._set_board_chararray()
-
-        if not char_to_piece:
-            char_to_piece = {
-                    "P": self.WP,
-                    "R": self.WR,
-                    "N": self.WN,
-                    "B": self.WB,
-                    "Q": self.WQ,
-                    "K": self.WK,
-                    "p": self.BP,
-                    "r": self.BR,
-                    "n": self.BN,
-                    "b": self.BB,
-                    "q": self.BQ,
-                    "k": self.BK,
-                }
 
     def _create_pieces(self):
         self.WP = Pieces.Pawn(chess.BB_EMPTY, chess.WHITE, chess.PAWN)
@@ -121,7 +120,7 @@ class Board:
 
 
     @staticmethod
-    def get_individual_piece_bb(bb_pieces: Bitboard):
+    def get_individual_piece_bb(bb_pieces: chess.Bitboard):
         """
         Generates 1 bit bitboards from the decomposition of a bitboard
         """
@@ -171,7 +170,7 @@ class Board:
                     attacked_piece_name = self.get_piece_name_from_square(action.destination_square)
                     opponent_piece_attacked = self.char_to_piece[attacked_piece_name]
                     opponent_piece_attacked &= ~get_bb_from_square_int(action.destination_square)
-        
+
         # update helper bitboards and chararray
         self._set_helper_bitboards()
         self._set_board_chararray()
@@ -190,7 +189,7 @@ class Board:
         opponent_pieces = self.black_pieces if action.player == chess.WHITE else self.white_pieces
         if action.type == ActionType.ATTACK and opponent_pieces & get_bb_from_square_int(action.destination_square) == 0:
             raise Exception(f"Destination square of attack {action} is not occupied by an opponent piece.")
-    
+
 
 class InvalidFenException(Exception):
     pass
