@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing import Optional, Tuple
 from chess.action import Action, ActionType
 from chess.utils import get_bb_from_square_int
+from chess.fen_utils import FenUtils
 
 @dataclass
 class State:
@@ -12,13 +13,13 @@ class State:
     fen: str
     board: Board
     turn: bool
-    can_castle_kingside: Tuple(bool, bool)
-    can_castle_queenside: Tuple(bool, bool)
-    in_check: Tuple(bool, bool)
-    in_checkmate: Tuple(bool, bool)
+    can_castle_kingside: Tuple[bool, bool]
+    can_castle_queenside: Tuple[bool, bool]
     en_passant_capture_square: chess.Bitboard  # Destination square of attacking piece
     halfmove_count: int
     move_count: int
+    in_check: Tuple[bool, bool]
+    in_checkmate: Tuple[bool, bool]
 
     def __init__(self, fen=None) -> None:
         if fen:
@@ -26,31 +27,17 @@ class State:
         else:
             self.get_state_from_fen(chess.STARTING_BOARD_FEN)
 
-    def get_state_from_fen(self, fen: str):
-        fields = fen.split()
-        fen_board = fields[0]
-        player = fields[1]
-        castling_rights = fields[2]
-        en_passant = fields[3]
-        halfmove_clock = fields[4]
-        fullmove_number = fields[5]
-
-        self.fen = fen
-        self.board = Board(fen_board)
-        self.turn = player == "w"
-
-        self.can_castle_kingside = ("k" in castling_rights, "K" in castling_rights)
-        self.can_castle_queenside = ("q" in castling_rights, "Q" in castling_rights)
-
-        if en_passant != "-":
-            self.en_passant_capture_square = chess.BB_SQUARES[
-                chess.SQUARE_NAMES.index(en_passant)
-            ]
-        else:
-            self.en_passant_capture_square = chess.BB_EMPTY
-
-        self.halfmove_count = int(halfmove_clock)
-        self.move_count = int(fullmove_number)
+    def get_state_from_fen(self, fen_str: str):
+        fen = FenUtils(fen_str)
+        self.parent = self
+        self.fen = fen_str
+        self.board = fen.get_board(Board)
+        self.turn = fen.get_player()
+        self.can_castle_kingside = fen.get_can_castle_kingside()
+        self.can_castle_queenside = fen.get_can_castle_queenside()
+        self.en_passant_capture_square = fen.get_en_passant_capture_square()
+        self.halfmove_count = fen.get_halfmove_count()
+        self.move_count = fen.get_move_count()
 
         self.occupied_co = (self.board.black_occupied, self.board.white_occupied)
 
@@ -73,16 +60,16 @@ class State:
         new_state.board.apply_action(action)
         new_state.turn = ~self.turn
         new_state.halfmove_count = self.halfmove_count + 1
-
-        if self.turn == chess.BLACK:
-            new_state.move_count = self.move_count + 1
+        new_state.move_count = new_state.halfmove_count // 2
 
         if action.piece_type == chess.KING:
             new_state.can_castle_kingside[action.player] = False
             new_state.can_castle_queenside[action.player] = False
 
+        # ??? This is in front of piece. We need the opponent piece location, not the action piece location.
         if action.type == ActionType.EN_PASSANT:
             if action.player == chess.WHITE:
+               # Check if two steps forward
                new_state.en_passant_capture_square = get_bb_from_square_int(action.origin_square) >> 8
             else:
                new_state.en_passant_capture_square = get_bb_from_square_int(action.origin_square) << 8

@@ -70,3 +70,4 @@ class Fen:
     @staticmethod
     def _get_move_count_fen(state: State):
         return str(state.move_count)
+
