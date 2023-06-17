@@ -23,6 +23,8 @@ class Action:
     type: ActionType
     promotion_to: Optional[Piece]
     is_long_castles: Optional[bool]
+    is_check: Optional[bool]
+    is_checkmate: Optional[bool]
 
     def __repr__(self):
         if self.type == ActionType.CASTLING:
@@ -32,7 +34,9 @@ class Action:
         captures = "x" if self.type == ActionType.ATTACK else ""
         end = get_square_notation(self.destination_square)
         promotion_to = f"/{chess.PIECE_SYMBOLS[self.promotion_to].upper()}" if self.type == ActionType.PROMOTION else ""
-        return f"{piece}{start}{captures}{end}{promotion_to}"
+        check = "+" if self.is_check and not self.is_checkmate else ""
+        checkmate = "#" if self.is_checkmate else ""
+        return f"{piece}{start}{captures}{end}{promotion_to}{check}{checkmate}"
 
     @staticmethod
     def generate_actions(moves: chess.Bitboard, piece: Piece, origin_square: int, action_type: ActionType, **kwargs):
@@ -42,6 +46,11 @@ class Action:
             piece : piece object
             origin_square : bitboard containint current position of piece to move
             action_type : type of action (move, attack, promotion)
+            kwargs:
+                promotion_to: pawn promotes to this piece type
+                is_long_castles: True if long castles (queenside), False if short castles (kingside)
+                is_check: True if this action puts the king in check
+                is_checkmate: True if this action is a checkmate
         Returns:
             A list of 'Action' instances representing each source and destination square for piece to move.
         """
@@ -54,7 +63,9 @@ class Action:
                 player=piece.color,
                 type=action_type,
                 promotion_to=kwargs.get("promotion_to", None),
-                is_long_castles=kwargs.get("is_long_castles", None)
+                is_long_castles=kwargs.get("is_long_castles", None),
+                is_check=kwargs.get("is_check", None),
+                is_checkmate=kwargs.get("is_checkmate", None)
             )
             for new_piece_position in get_individual_ones_in_bb(moves)
         ]
