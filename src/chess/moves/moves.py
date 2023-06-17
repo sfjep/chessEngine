@@ -14,6 +14,9 @@ class MoveGenerator:
         self.opponent_occupied = self.player_board['OPPONENT_OCCUPIED']
         self.moves = []
         self.attacks = []
+        self.en_passant = []
+        self.promotion = []
+        self.castles = []
 
     def get_piece_moves(self):
         self._get_pawn_moves()
@@ -22,7 +25,7 @@ class MoveGenerator:
         self._get_knight_moves()
         self._get_bishop_moves()
         self._get_king_moves()
-        return self.moves, self.attacks
+        return self.moves, self.attacks, self.castles, self.promotion
 
     def _get_pawn_moves(self):
         pawns = self.player_board["PAWN"]
@@ -38,12 +41,19 @@ class MoveGenerator:
                     if move_2_up := pawn_two_step(current_piece_position, self.color) & ~(self.opponent_occupied | self.player_occupied):
                         destination_squares |= move_2_up
 
-            self.moves += Action.generate_actions(destination_squares, pawns, current_piece_index, ActionType.MOVE)
+            self.moves += Action.generate_actions(destination_squares & ~self.opponent_occupied, pawns, current_piece_index, ActionType.MOVE)
             self.attacks += Action.generate_actions(attack_squares, pawns, current_piece_index, ActionType.ATTACK)
-            self.attacks += Action.generate_actions(en_passant_dest_squares, pawns, current_piece_index, ActionType.EN_PASSANT)
+            self.en_passant += Action.generate_actions(en_passant_dest_squares, pawns, current_piece_index, ActionType.EN_PASSANT)
+            self._get_promotion_moves(destination_squares, current_piece_index, pawns)
 
-        # TODO: separate action generation for PROMOTIONS
-
+    def _get_promotion_moves(self, destination_squares, current_piece_index, pawns):
+        promotion_ranks = chess.BB_PROMOTION_RANK[self.color]
+        promotion_squares = destination_squares & promotion_ranks
+        for promotion_square in get_individual_ones_in_bb(promotion_squares):
+            self.promotion += Action.generate_actions(promotion_square, pawns, current_piece_index, ActionType.PROMOTION, promotion_to=chess.KNIGHT)
+            self.promotion += Action.generate_actions(promotion_square, pawns, current_piece_index, ActionType.PROMOTION, promotion_to=chess.BISHOP)
+            self.promotion += Action.generate_actions(promotion_square, pawns, current_piece_index, ActionType.PROMOTION, promotion_to=chess.ROOK)
+            self.promotion += Action.generate_actions(promotion_square, pawns, current_piece_index, ActionType.PROMOTION, promotion_to=chess.QUEEN)
 
     def _get_rook_moves(self):
         rooks = self.player_board["ROOK"]
@@ -58,7 +68,7 @@ class MoveGenerator:
 
         for piece_bb in get_individual_ones_in_bb(knights.bb):
             square_int = get_square_int_from_bb(piece_bb)
-            destination_squares = knights.moves_lookup[square_int] & ~self.player_occupied
+            destination_squares = knights.moves_lookup[square_int] & ~self.player_occupied & ~self.opponent_occupied
             attack_moves = knights.moves_lookup[square_int] & ~self.player_occupied & self.opponent_occupied
 
             self.moves += Action.generate_actions(destination_squares, knights, square_int, ActionType.MOVE)
@@ -85,22 +95,25 @@ class MoveGenerator:
 
         for current_piece_position_bb in get_individual_ones_in_bb(king.bb):
             square_int = get_square_int_from_bb(current_piece_position_bb)
-            destination_squares = king.moves_lookup[(square_int, self.color)] & ~self.player_occupied
-            castling_squares = self._add_castling()
+            destination_squares = king.moves_lookup[(square_int, self.color)] & ~self.player_occupied & ~self.opponent_occupied
+            kingside_castles_bb, queenside_castles_bb = self._add_castling()
 
             attack_squares = king.moves_lookup[(square_int, self.color)] & ~self.player_occupied & self.opponent_occupied
 
             self.moves += Action.generate_actions(destination_squares, king, square_int, ActionType.MOVE)
-            self.moves += Action.generate_actions(castling_squares, king, square_int, ActionType.CASTLING)
             self.attacks += Action.generate_actions(attack_squares, king, square_int, ActionType.ATTACK)
+            self.castles += Action.generate_actions(queenside_castles_bb, king, square_int, ActionType.CASTLING, is_long_castles=True)
+            self.castles += Action.generate_actions(kingside_castles_bb, king, square_int, ActionType.CASTLING, is_long_castles=False)
+
 
     def _add_castling(self):
-        castles_bb = chess.BB_EMPTY
+        kingside_castles_bb = chess.BB_EMPTY
+        queenside_castles_bb = chess.BB_EMPTY
         if self.state.can_castle_queenside[self.color] and self._queenside_castling_squares_empty():
-            castles_bb += chess.QUEENSIDE_CASTLE_SQUARE[self.color]
+            queenside_castles_bb = chess.QUEENSIDE_CASTLE_SQUARE[self.color]
         if self.state.can_castle_kingside[self.color] and self._kingside_castling_squares_empty():
-            castles_bb += chess.KINGSIDE_CASTLE_SQUARE[self.color]
-        return castles_bb
+            kingside_castles_bb = chess.KINGSIDE_CASTLE_SQUARE[self.color]
+        return kingside_castles_bb, queenside_castles_bb
 
     def _queenside_castling_squares_empty(self):
         return (chess.BB_QUEENSIDE_CASTLE_SQUARES[self.color] & (self.opponent_occupied | self.player_occupied)) == chess.BB_EMPTY
@@ -117,8 +130,7 @@ class MoveGenerator:
                 destination_squares &= ~mask_own_pieces(piece_pos_int, move_range, self.player_occupied, mask_upwards)
                 destination_squares &= ~mask_opponent_pieces(piece_pos_int, move_range, self.opponent_occupied, mask_upwards)
 
-            # TODO: Take out attack moves from of the self.moves list
-            self.moves += Action.generate_actions(destination_squares, piece, piece_pos_int, ActionType.MOVE)
+            self.moves += Action.generate_actions(destination_squares & ~self.opponent_occupied, piece, piece_pos_int, ActionType.MOVE)
             self.attacks += Action.generate_actions(destination_squares & self.opponent_occupied, piece, piece_pos_int, ActionType.ATTACK)
 
 
