@@ -84,3 +84,10 @@ def get_bb_diagonals_from_square_int(square: int):
         SQUARE_XRAYS[square]["DOWN_RIGHT"] |
         SQUARE_XRAYS[square]["DOWN_LEFT"]
     )
+
+def get_square_notation(n: int) -> str:
+    if n < 0 or n > 63:
+        raise ValueError("n must be between 0 and 63")
+    row = chr(ord('a') + n % 8)
+    col = str(n // 8 + 1)
+    return row + col
