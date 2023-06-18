@@ -1,5 +1,5 @@
 import chess
-from chess.utils import get_bb_from_square_int
+from chess.utils import get_bb_from_square_int, lsb
 from chess.moves.move_utils import SQUARE_XRAYS
 
 def mask_own_pieces_upward_range(range_bb: chess.Bitboard, own_pieces: chess.Bitboard):
@@ -55,7 +55,7 @@ def mask_own_pieces(current_square: int, directions: list, own_pieces: chess.Bit
         target_squares |= masking_function(xray, own_pieces)
     return target_squares
 
-def mask_opponent_pieces_upward(range_bb: chess.Bitboard, opponent_pieces: chess.Bitboard):
+def mask_opponent_pieces_upward(xray: chess.Bitboard, opponent_pieces: chess.Bitboard):
     """
     Input:
         A range BB (vertical, horizontal or diagonal) from the current position UPWARDS or RIGHTWARD
@@ -65,8 +65,10 @@ def mask_opponent_pieces_upward(range_bb: chess.Bitboard, opponent_pieces: chess
     Note: This function works ONLY for movements from a square i (curreny position) to a square j,
         where i < j, for i,j in [0..63].
     """
-    _mask = range_bb & opponent_pieces
-    return range_bb & ~(_mask & ~(_mask - 1))
+    opponent_pieces_in_xray = xray & opponent_pieces
+    closest_opponent_piece = lsb(opponent_pieces_in_xray)
+    squares_below_closest_opponent_piece = closest_opponent_piece - 1
+    return xray & ~(closest_opponent_piece | squares_below_closest_opponent_piece)
 
 def mask_opponent_pieces_downward_range(range_bb: chess.Bitboard, opponent_pieces: chess.Bitboard):
     """
