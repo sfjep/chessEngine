@@ -3,8 +3,8 @@ import chess.utils as utils
 from chess.pieces.piece import Piece
 
 class Queen(Piece):
-    def __init__(self, bb, color, piece_type):
-        super().__init__(bb, color, piece_type)
+    def __init__(self, bb, color):
+        super().__init__(bb, color, chess.QUEEN)
         self.generate_move_lookup()
 
     def generate_move_lookup(self):

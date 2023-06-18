@@ -4,8 +4,8 @@ from chess.moves.move_utils import MoveUtils
 
 
 class King(Piece):
-    def __init__(self, bb, color, piece_type):
-        super().__init__(bb, color, piece_type)
+    def __init__(self, bb, color):
+        super().__init__(bb, color, chess.KING)
         self.generate_move_lookup()
 
     def generate_move_lookup(self):

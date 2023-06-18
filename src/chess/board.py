@@ -57,18 +57,18 @@ class Board:
         self._set_board_chararray()
 
     def _create_pieces(self):
-        self.WP = Pieces.Pawn(chess.BB_EMPTY, chess.WHITE, chess.PAWN)
-        self.WR = Pieces.Rook(chess.BB_EMPTY, chess.WHITE, chess.ROOK)
-        self.WN = Pieces.Knight(chess.BB_EMPTY, chess.WHITE, chess.KNIGHT)
-        self.WB = Pieces.Bishop(chess.BB_EMPTY, chess.WHITE, chess.BISHOP)
-        self.WQ = Pieces.Queen(chess.BB_EMPTY, chess.WHITE, chess.QUEEN)
-        self.WK = Pieces.King(chess.BB_EMPTY, chess.WHITE, chess.KING)
-        self.BP = Pieces.Pawn(chess.BB_EMPTY, chess.BLACK, chess.PAWN)
-        self.BR = Pieces.Rook(chess.BB_EMPTY, chess.BLACK, chess.ROOK)
-        self.BN = Pieces.Knight(chess.BB_EMPTY, chess.BLACK, chess.KNIGHT)
-        self.BB = Pieces.Bishop(chess.BB_EMPTY, chess.BLACK, chess.BISHOP)
-        self.BQ = Pieces.Queen(chess.BB_EMPTY, chess.BLACK, chess.QUEEN)
-        self.BK = Pieces.King(chess.BB_EMPTY, chess.BLACK, chess.KING)
+        self.WP = Pieces.Pawn(chess.BB_EMPTY, chess.WHITE)
+        self.WR = Pieces.Rook(chess.BB_EMPTY, chess.WHITE)
+        self.WN = Pieces.Knight(chess.BB_EMPTY, chess.WHITE)
+        self.WB = Pieces.Bishop(chess.BB_EMPTY, chess.WHITE)
+        self.WQ = Pieces.Queen(chess.BB_EMPTY, chess.WHITE)
+        self.WK = Pieces.King(chess.BB_EMPTY, chess.WHITE)
+        self.BP = Pieces.Pawn(chess.BB_EMPTY, chess.BLACK)
+        self.BR = Pieces.Rook(chess.BB_EMPTY, chess.BLACK)
+        self.BN = Pieces.Knight(chess.BB_EMPTY, chess.BLACK)
+        self.BB = Pieces.Bishop(chess.BB_EMPTY, chess.BLACK)
+        self.BQ = Pieces.Queen(chess.BB_EMPTY, chess.BLACK)
+        self.BK = Pieces.King(chess.BB_EMPTY, chess.BLACK)
 
     def _set_board_to_start_position(self):
         self.WP.bb = chess.BB_RANK_2
