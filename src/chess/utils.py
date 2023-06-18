@@ -91,3 +91,6 @@ def get_square_notation(n: int) -> str:
     row = chr(ord('a') + n % 8)
     col = str(n // 8 + 1)
     return row + col
+
+def lsb(n: int) -> int:
+    return n & -n
