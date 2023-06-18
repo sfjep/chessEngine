@@ -15,7 +15,7 @@ class MoveGenerator:
         self.moves = []
         self.attacks = []
         self.en_passant = []
-        self.promotion = []
+        self.promotions = []
         self.castles = []
 
     def get_piece_moves(self):
@@ -25,7 +25,6 @@ class MoveGenerator:
         self._get_knight_moves()
         self._get_bishop_moves()
         self._get_king_moves()
-        return self.moves, self.attacks, self.castles, self.promotion
 
     def _get_pawn_moves(self):
         pawns = self.player_board["PAWN"]
@@ -50,10 +49,10 @@ class MoveGenerator:
         promotion_ranks = chess.BB_PROMOTION_RANK[self.color]
         promotion_squares = destination_squares & promotion_ranks
         for promotion_square in get_individual_ones_in_bb(promotion_squares):
-            self.promotion += Action.generate_actions(promotion_square, pawns, current_piece_index, ActionType.PROMOTION, promotion_to=chess.KNIGHT)
-            self.promotion += Action.generate_actions(promotion_square, pawns, current_piece_index, ActionType.PROMOTION, promotion_to=chess.BISHOP)
-            self.promotion += Action.generate_actions(promotion_square, pawns, current_piece_index, ActionType.PROMOTION, promotion_to=chess.ROOK)
-            self.promotion += Action.generate_actions(promotion_square, pawns, current_piece_index, ActionType.PROMOTION, promotion_to=chess.QUEEN)
+            self.promotions += Action.generate_actions(promotion_square, pawns, current_piece_index, ActionType.PROMOTION, promotion_to=chess.KNIGHT)
+            self.promotions += Action.generate_actions(promotion_square, pawns, current_piece_index, ActionType.PROMOTION, promotion_to=chess.BISHOP)
+            self.promotions += Action.generate_actions(promotion_square, pawns, current_piece_index, ActionType.PROMOTION, promotion_to=chess.ROOK)
+            self.promotions += Action.generate_actions(promotion_square, pawns, current_piece_index, ActionType.PROMOTION, promotion_to=chess.QUEEN)
 
     def _get_rook_moves(self):
         rooks = self.player_board["ROOK"]
@@ -107,13 +106,15 @@ class MoveGenerator:
 
 
     def _add_castling(self):
-        kingside_castles_bb = chess.BB_EMPTY
-        queenside_castles_bb = chess.BB_EMPTY
-        if self.state.can_castle_queenside[self.color] and self._queenside_castling_squares_empty():
-            queenside_castles_bb = chess.QUEENSIDE_CASTLE_SQUARE[self.color]
-        if self.state.can_castle_kingside[self.color] and self._kingside_castling_squares_empty():
-            kingside_castles_bb = chess.KINGSIDE_CASTLE_SQUARE[self.color]
-        return kingside_castles_bb, queenside_castles_bb
+        # Cannot castle when in check
+        if not self.state.in_check[self.color]:
+            kingside_castles_bb = chess.BB_EMPTY
+            queenside_castles_bb = chess.BB_EMPTY
+            if self.state.can_castle_queenside[self.color] and self._queenside_castling_squares_empty():
+                queenside_castles_bb = chess.QUEENSIDE_CASTLE_SQUARE[self.color]
+            if self.state.can_castle_kingside[self.color] and self._kingside_castling_squares_empty():
+                kingside_castles_bb = chess.KINGSIDE_CASTLE_SQUARE[self.color]
+            return kingside_castles_bb, queenside_castles_bb
 
     def _queenside_castling_squares_empty(self):
         return (chess.BB_QUEENSIDE_CASTLE_SQUARES[self.color] & (self.opponent_occupied | self.player_occupied)) == chess.BB_EMPTY
@@ -134,7 +135,9 @@ class MoveGenerator:
             self.attacks += Action.generate_actions(destination_squares & self.opponent_occupied, piece, piece_pos_int, ActionType.ATTACK)
 
 
-
+    def _is_check(self, possible_moves):
+        for move in possible_moves:
+            fictional_board = deepcopy(self.state.board)
 """
 In check?
 

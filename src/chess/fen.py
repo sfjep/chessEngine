@@ -44,13 +44,13 @@ class Fen:
     @staticmethod
     def _get_castling_fen(state: State):
         fen = ''
-        if state.white_can_castle_kingside:
+        if state.can_castle_kingside[chess.WHITE]:
             fen += "K"
-        if state.white_can_castle_queenside:
+        if state.can_castle_queenside[chess.WHITE]:
             fen += "Q"
-        if state.black_can_castle_kingside:
+        if state.can_castle_kingside[chess.BLACK]:
             fen += "k"
-        if state.black_can_castle_queenside:
+        if state.can_castle_queenside[chess.BLACK]:
             fen += "q"
         if len(fen) == 0:
             fen += "-"

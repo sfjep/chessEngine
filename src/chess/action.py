@@ -26,12 +26,18 @@ class Action:
     is_check: Optional[bool]
     is_checkmate: Optional[bool]
 
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.__dict__ == other.__dict__ and self.__repr__() == other.__repr__()
+        else:
+            return False
+
     def __repr__(self):
         if self.type == ActionType.CASTLING:
-            return "0-0-0" if self.is_long_castles else "0-0"
+            return "O-O-O" if self.is_long_castles else "O-O"
         piece = chess.PIECE_SYMBOLS[self.piece_type].upper()
         start = get_square_notation(self.origin_square)
-        captures = "x" if self.type == ActionType.ATTACK else ""
+        captures = "x" if self.type in [ActionType.ATTACK, ActionType.EN_PASSANT] else ""
         end = get_square_notation(self.destination_square)
         promotion_to = f"/{chess.PIECE_SYMBOLS[self.promotion_to].upper()}" if self.type == ActionType.PROMOTION else ""
         check = "+" if self.is_check and not self.is_checkmate else ""
@@ -69,3 +75,5 @@ class Action:
             )
             for new_piece_position in get_individual_ones_in_bb(moves)
         ]
+
+
