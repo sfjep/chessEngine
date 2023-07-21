@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import chess
+from chess.utils import typename
 
 class Piece(ABC):
 
@@ -12,7 +13,11 @@ class Piece(ABC):
         self.color = color
         self.type = piece_type
 
+
     def __repr__(self):
+        return f"{typename(self)}(bb={self.bb}, color={self.color}, piece_type={self.type})"
+
+    def __str__(self):
         return f"{chess.COLOR_NAMES[self.color]} {chess.PIECE_SYMBOLS[self.type]}"
 
     @abstractmethod
