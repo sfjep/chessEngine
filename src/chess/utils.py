@@ -94,3 +94,6 @@ def get_square_notation(n: int) -> str:
 
 def lsb(n: int) -> int:
     return n & -n
+
+def typename(obj):
+    return type(obj).__name__

@@ -4,7 +4,7 @@ from typing import Optional
 
 import chess
 from chess.pieces.piece import Piece
-from chess.utils import get_individual_ones_in_bb, get_square_int_from_bb, get_square_notation
+from chess.utils import get_individual_ones_in_bb, get_square_int_from_bb, get_square_notation, typename
 
 
 class ActionType(Enum):
@@ -33,6 +33,18 @@ class Action:
             return False
 
     def __repr__(self):
+        piece = f"piece_type={self.piece_type}, "
+        origin_sq = f"origin_square={self.origin_square}, "
+        dest_sq = f"destination_square={self.destination_square}, "
+        player = f"player={self.player}, "
+        type = f"type={self.type}"
+        promo = ", promotion_to={self.promotion_to}" if self.promotion_to else ""
+        castles = ", is_long_castles={self.is_long_castles}" if self.is_long_castles else ""
+        check = ", is_check={self.is_check}" if self.is_check else ""
+        checkmate = ", is_checkmate={self.is_checkmate}" if self.is_checkmate else ""
+        return f"{typename(self)}({piece}{origin_sq}{dest_sq}{player}{type}{promo}{castles}{check}{checkmate})"
+
+    def __str__(self):
         if self.type == ActionType.CASTLING:
             return "O-O-O" if self.is_long_castles else "O-O"
         piece = chess.PIECE_SYMBOLS[self.piece_type].upper()

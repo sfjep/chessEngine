@@ -5,7 +5,7 @@ import chess
 import chess.pieces as Pieces
 from chess.action import Action, ActionType
 from chess.pieces.piece import Piece
-from chess.utils import get_individual_ones_in_bb, get_square_int_from_bb, get_bb_from_square_int
+from chess.utils import get_individual_ones_in_bb, get_square_int_from_bb, get_bb_from_square_int, typename
 
 class Board:
     WP: Piece
@@ -55,6 +55,9 @@ class Board:
 
         self._set_helper_bitboards()
         self._set_board_chararray()
+
+    def __repr__(self):
+        return f"{typename(self)}(fen_board={self.fen_board})"
 
     def _create_pieces(self):
         self.WP = Pieces.Pawn(chess.BB_EMPTY, chess.WHITE)
