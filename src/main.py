@@ -5,13 +5,17 @@ from chess.state import State
 
 def main():
     # start_game("rQbqk2r/pp1ppppp/8/2pPB2P/1P1pP3/8/PPP3PP/R1n1K1NR w KQkq c6 3 6")
-    state = State("3k4/8/3p4/8/1p3P2/3R4/3P4/4K3 w - - 0 1")
+    state = State("3k4/8/3p4/8/1p3P2/3B4/3P4/4K3 w - - 0 1")
     state.get_possible_actions()
 
-    print("Moves: ", state.possible_actions.moves)
-    print("Attacks: ", state.possible_actions.attacks)
-    print("Castles: ", state.possible_actions.castles)
-    print("Promo: ", state.possible_actions.promotions)
+    print("Moves")
+    for move in state.moves: print(move)
+    print("Attacks")
+    for move in state.attacks: print(move)
+    print("Castles")
+    for move in state.castles: print(move)
+    print("Promotions")
+    for move in state.promotions: print(move)
 
     gui = GUI()
     gui.run(state)

@@ -4,7 +4,7 @@ from chess.board import Board
 from dataclasses import dataclass
 from typing import List, Optional, Tuple
 from chess.action import Action
-from chess.utils import get_bb_from_rank_and_file
+from chess.utils import convert_rank_and_file_to_square_int
 from chess.fen_utils import FenUtils
 from chess.moves.moves import MoveGenerator
 
@@ -76,9 +76,8 @@ class State:
             Convert possible moves to list of Actions
         """
         move_gen = MoveGenerator(self)
-        self.moves, self.attacks, self.castles, self.promotion = move_gen.get_piece_moves()
-        return self.moves + self.attacks + self.castles + self.promotion
-
+        self.moves, self.attacks, self.castles, self.promotions = move_gen.get_piece_moves()
+        return self.moves + self.attacks + self.castles + self.promotions
 
     def choose_action(self):
         '''
@@ -102,7 +101,6 @@ class State:
 
         new_state.valid_moves = new_state.get_possible_actions()
 
-
     def get_actions_from_origin_square(self, rank: int, file: int):
-        bb = get_bb_from_rank_and_file(rank, file)
-        return Action.get_actions_from_origin_square(self.valid_moves, bb)
+        square_int = convert_rank_and_file_to_square_int(rank, file)
+        return Action.get_actions_from_origin_square(self.valid_moves, square_int)

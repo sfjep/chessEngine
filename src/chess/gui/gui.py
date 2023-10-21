@@ -2,12 +2,13 @@ import pygame as p
 import chess
 import sys
 from chess.gui.dragger import Dragger
+from chess.utils import get_rank_file_from_square_int
 
 class GUI:
 	WIDTH = HEIGHT = 512
 	DIMENSION = 8
 	SQUARE_SIZE = HEIGHT // DIMENSION
-	MAX_FPS = 60
+	MAX_FPS = 12
 	IMAGES = {}
 	VALID_MOVE_COLOR = p.Color(235,155,155)
 	LIGHT_SQ_COLOR = p.Color(248,220,180)
@@ -30,35 +31,36 @@ class GUI:
 			)
 
 	def run(self, state):
-		clock = p.time.Clock()  # to control the game's frame rate
+		clock = p.time.Clock()
 		self.dragging = False
-		
+		self.valid_moves_drawn = False
+		self.valid_moves = []
+
 		while True:
 			clock.tick(self.MAX_FPS)
 			self.show_background()
 			self._draw_pieces(state.board)
 
+			if self.dragging:
+				if not self.valid_moves_drawn:
+					self.valid_moves = state.get_actions_from_origin_square(7 - self.clicked_rank, self.clicked_file)
+					self.valid_moves_drawn = True  # Set the flag to True after drawing them once
+
 			for event in p.event.get():
 				if event.type == p.MOUSEBUTTONDOWN:
 					position = event.pos
-					clicked_rank = position[1] // self.SQUARE_SIZE
-					clicked_file = position[0] // self.SQUARE_SIZE
+					self.clicked_rank = position[1] // self.SQUARE_SIZE
+					self.clicked_file = position[0] // self.SQUARE_SIZE
 
-					if state.board.square_has_piece(clicked_rank, clicked_file):
+					if state.board.square_has_piece(self.clicked_rank, self.clicked_file):
 						print("Clicked on a piece")
 						self.dragging = True
-						self.original_position = (clicked_rank, clicked_file)
+						self.original_position = (self.clicked_rank, self.clicked_file)
+						self.valid_moves = state.get_actions_from_origin_square(7 - self.clicked_rank, self.clicked_file)
 
-						(flipped_rank, flipped_file) = self.get_rank_and_file_from_position(event.pos)
-						print("Clicked rank: ", clicked_rank)
-						print("Flipped rank: ", flipped_rank)
-
-						print("Clicked file: ", clicked_file)
-						print("Flipped file: ", flipped_file)
-						valid_moves = state.get_actions_from_origin_square(flipped_rank, flipped_file)
-						print(valid_moves)
-						self.draw_valid_moves(valid_moves)
-						piece = state.board.get_piece_name_from_board_dim(clicked_rank, clicked_file)
+						print("Clicked rank: ", self.clicked_rank)
+						print("Clicked file: ", self.clicked_file)
+						piece = state.board.get_piece_name_from_board_dim(self.clicked_rank, self.clicked_file)
 						self.dragger.update_position(position, self.IMAGES[piece])
 
 				# Drag piece
@@ -69,31 +71,36 @@ class GUI:
 				# Drop
 				elif event.type == p.MOUSEBUTTONUP:
 					if self.dragging:
-						
+
 						# Logic for placing the piece or reverting the move if it's invalid
 						new_position = (event.pos[1] // self.SQUARE_SIZE, event.pos[0] // self.SQUARE_SIZE)
-                        
-						# If the move is invalid, you can set new_position to original_position to revert the piece
 
+						# If the move is invalid, you can set new_position to original_position to revert the piece
 						self.dragging = False
+						self.valid_moves_drawn = False  # Reset the flag when the piece is dropped
+						self.valid_moves = []  # Clear the valid moves
+
 					self.dragger.clear()  # clear the piece from the dragger
 
 				# Quit
 				elif event.type == p.QUIT:
 					p.quit()
 					sys.exit()
-			
+
 			if self.dragging and self.dragger.get_piece():
 				self.screen.blit(self.dragger.get_piece(), (self.dragger.x_coor - self.SQUARE_SIZE // 2, self.dragger.y_coor - self.SQUARE_SIZE // 2))
 
 			p.display.flip()
-	
+
 
 	# Show methods
 	def show_background(self):
 		for rank in range(self.DIMENSION):
 			for file in range(self.DIMENSION):
-				color = self._get_square_color(rank, file)
+				if self.dragging and ((7-rank) * 8 + file) in self.valid_moves:
+					color = self.VALID_MOVE_COLOR
+				else:
+					color = self._get_square_color(rank, file)
 				p.draw.rect(
 					self.screen,
 					color,
@@ -131,28 +138,18 @@ class GUI:
                         )
                     )
 
-	def _get_x_coordinate(self):
-		return self.dragger.x_coor // self.SQUARE_SIZE
-
-	def _get_y_coordinate(self):
-		return self.dragger.y_coor // self.SQUARE_SIZE
-	
 	def draw_valid_moves(self, valid_moves):
+		print(valid_moves)
 		for valid_move in valid_moves:
-			print(valid_move)
-			rank, file = self.get_rank_file_from_move(valid_move)
-			print("rank, file", rank, file)
+			rank, file = get_rank_file_from_square_int(valid_move)
 			p.draw.rect(
 				self.screen,
 				self.VALID_MOVE_COLOR,
 				p.Rect(
 					file * self.SQUARE_SIZE,
-					rank * self.SQUARE_SIZE,
+					(7-rank) * self.SQUARE_SIZE,
 					self.SQUARE_SIZE,
 					self.SQUARE_SIZE,
 				)
 			)
-
-	def get_rank_and_file_from_position(self, event_pos):
-		return (7 - event_pos[1] // self.SQUARE_SIZE, event_pos[0] // self.SQUARE_SIZE)
-	
+			p.display.update()

@@ -25,6 +25,7 @@ class MoveGenerator:
         self._get_knight_moves()
         self._get_bishop_moves()
         self._get_king_moves()
+        return self.moves, self.attacks, self.castles, self.promotions
 
     def _get_pawn_moves(self):
         pawns = self.player_board["PAWN"]
