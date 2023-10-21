@@ -98,3 +98,9 @@ def convert_rank_and_file_to_square_int(rank: int, file: int) -> int:
 def get_bb_from_rank_and_file(rank: int, file: int) -> chess.Bitboard:
     square_int = convert_rank_and_file_to_square_int(rank, file)
     return get_bb_from_square_int(square_int)
+
+def lsb(n: int) -> int:
+    return n & -n
+
+def typename(obj):
+    return type(obj).__name__

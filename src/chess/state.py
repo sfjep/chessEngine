@@ -28,6 +28,8 @@ class State:
             self.get_state_from_fen(fen)
         else:
             self.get_state_from_fen(chess.STARTING_BOARD_FEN)
+        self.is_in_check()
+        self.is_checkmate()
 
         self.valid_moves = self.get_possible_actions()
 
@@ -48,14 +50,21 @@ class State:
         # set player_occupied
         if self.turn == chess.WHITE:
             self.player_occupied = self.board.white_occupied
-        else:
-            self.player_occupied = self.board.black_occupied
-
-        # set opponent_ocupied
-        if self.turn == chess.WHITE:
             self.opponent_occupied = self.board.black_occupied
         else:
+            self.player_occupied = self.board.black_occupied
             self.opponent_occupied = self.board.white_occupied
+
+
+    def is_in_check(self):
+        # TODO
+        self.in_check = (False, False)
+
+
+
+    def is_checkmate(self):
+        # TODO
+        self.in_checkmate = (False, False)
 
 
     def get_possible_actions(self):
@@ -69,6 +78,7 @@ class State:
         move_gen = MoveGenerator(self)
         self.moves, self.attacks, self.castles, self.promotion = move_gen.get_piece_moves()
         return self.moves + self.attacks + self.castles + self.promotion
+
 
     def choose_action(self):
         '''

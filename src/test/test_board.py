@@ -61,7 +61,7 @@ class BoardTest(unittest.TestCase):
 
     def test_board_from_empty_fen(self):
         board = Board("8/8/8/8/8/8/8/8")
-        for piece in board.pieces:
+        for piece in board.all_pieces:
             self.assertEqual(piece.bb, chess.BB_EMPTY)
 
     def test_board_from_fen_2(self):
