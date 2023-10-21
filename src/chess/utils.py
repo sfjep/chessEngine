@@ -7,7 +7,7 @@ Missing utils:
 from chess.moves.move_utils import SQUARE_XRAYS
 import chess
 from textwrap import wrap
-
+from typing import Tuple
 
 def get_binary_string_from_bb(bb: int) -> str:
     return "{:064b}".format(bb)
@@ -104,3 +104,11 @@ def lsb(n: int) -> int:
 
 def typename(obj):
     return type(obj).__name__
+
+def get_rank_file_from_square_int(square: int) -> Tuple[int, int]:
+    if square < 0 or square > 63:
+        raise ValueError("Square value must be between 0 and 63.")
+
+    rank = square // 8  # The quotient represents the rank.
+    file = square % 8   # The remainder represents the file.
+    return rank, file
