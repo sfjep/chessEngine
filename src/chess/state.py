@@ -2,9 +2,9 @@ from copy import deepcopy
 import chess
 from chess.board import Board
 from dataclasses import dataclass
-from typing import Optional, Tuple
-from chess.action import Action, ActionType
-from chess.utils import get_bb_from_square_int
+from typing import List, Optional, Tuple
+from chess.action import Action
+from chess.utils import get_bb_from_rank_and_file
 from chess.fen_utils import FenUtils
 from chess.moves.moves import MoveGenerator
 
@@ -21,12 +21,15 @@ class State:
     move_count: int
     in_check: Tuple[bool, bool]
     in_checkmate: Tuple[bool, bool]
+    valid_moves: List[Action]
 
     def __init__(self, fen=None) -> None:
         if fen:
             self.get_state_from_fen(fen)
         else:
             self.get_state_from_fen(chess.STARTING_BOARD_FEN)
+
+        self.valid_moves = self.get_possible_actions()
 
     def get_state_from_fen(self, fen_str: str):
         fen = FenUtils(fen_str)
@@ -61,10 +64,11 @@ class State:
             Check which color is playing
             Iterate through all pieces of color
             Take index of piece and get moves lookup
-            Convert possible moves to list of
+            Convert possible moves to list of Actions
         """
         move_gen = MoveGenerator(self)
         self.moves, self.attacks, self.castles, self.promotion = move_gen.get_piece_moves()
+        return self.moves + self.attacks + self.castles + self.promotion
 
     def choose_action(self):
         '''
@@ -85,3 +89,10 @@ class State:
             new_state.can_castle_queenside[action.player] = False
 
         # Set en passant
+
+        new_state.valid_moves = new_state.get_possible_actions()
+
+
+    def get_actions_from_origin_square(self, rank: int, file: int):
+        bb = get_bb_from_rank_and_file(rank, file)
+        return Action.get_actions_from_origin_square(self.valid_moves, bb)

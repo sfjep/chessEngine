@@ -69,3 +69,6 @@ class Action:
             )
             for new_piece_position in get_individual_ones_in_bb(moves)
         ]
+    
+    def get_actions_from_origin_square(action_list, origin_square):
+        return [action.destination_square for action in action_list if origin_square == action.origin_square]

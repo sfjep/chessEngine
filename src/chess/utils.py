@@ -91,3 +91,10 @@ def get_square_notation(n: int) -> str:
     row = chr(ord('a') + n % 8)
     col = str(n // 8 + 1)
     return row + col
+
+def convert_rank_and_file_to_square_int(rank: int, file: int) -> int:
+    return rank * 8 + file
+
+def get_bb_from_rank_and_file(rank: int, file: int) -> chess.Bitboard:
+    square_int = convert_rank_and_file_to_square_int(rank, file)
+    return get_bb_from_square_int(square_int)
