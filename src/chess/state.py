@@ -86,20 +86,21 @@ class State:
         pass
 
     def apply_action(self, action: Action):
-        new_state = deepcopy(self)
-        new_state.parent = self
+        new_state = self
+        new_state.parent = deepcopy(self)
         new_state.board.apply_action(action)
-        new_state.turn = ~self.turn
+        new_state.turn = not self.turn
         new_state.halfmove_count = self.halfmove_count + 1
         new_state.move_count = new_state.halfmove_count // 2
 
-        if action.piece_type == chess.KING:
-            new_state.can_castle_kingside[action.player] = False
-            new_state.can_castle_queenside[action.player] = False
+        if action.piece.type == chess.KING:
+            new_state.can_castle_kingside[action.piece.color] = False
+            new_state.can_castle_queenside[action.piece.color] = False
 
         # Set en passant
 
         new_state.valid_moves = new_state.get_possible_actions()
+
 
     def get_actions_from_origin_square(self, rank: int, file: int):
         square_int = convert_rank_and_file_to_square_int(rank, file)

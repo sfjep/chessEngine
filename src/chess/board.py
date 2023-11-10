@@ -169,6 +169,7 @@ class Board:
                 else:
                     self.board_arr[idx // 8, idx % 8] = f"B{chess.PIECE_SYMBOLS[piece.type].upper()}"
         self.board_arr = np.flip(self.board_arr, axis=0)
+        print(self.board_arr)
 
     def get_piece_name_from_board_dim(self, row: int, column: int) -> str:
         return self.board_arr[row][column]
@@ -182,24 +183,20 @@ class Board:
         return self.board_arr[row][column] != " "
 
     def apply_action(self, action: Action):
-        player_pieces = self.white_pieces if action.player == chess.WHITE else self.black_pieces
-        for piece in player_pieces:
-            if piece.type == action.piece_type:
 
-                # validate action
-                self.validate_action(piece, action)
+        # if action is ATTACK, remove opponent piece
+        if action.type == ActionType.ATTACK:
+            opponent_pieces = self.black_pieces if action.piece.color == chess.WHITE else self.white_pieces
+            for attacked_piece in opponent_pieces:
+                if attacked_piece.bb & get_bb_from_square_int(action.destination_square) != 0:
+                    attacked_piece.bb &= ~get_bb_from_square_int(action.destination_square)
+                    break
 
-                # remove piece from current square
-                piece.bb &= ~get_bb_from_square_int(action.origin_square)
+        # remove piece from current square
+        action.piece.bb &= ~get_bb_from_square_int(action.origin_square)
 
-                # move piece to new square
-                piece.bb |= get_bb_from_square_int(action.origin_square)
-
-                # if action is ATTACK, remove opponent piece
-                if action.type == ActionType.ATTACK:
-                    attacked_piece_name = self.get_piece_name_from_square(action.destination_square)
-                    opponent_piece_attacked = self.char_to_piece[attacked_piece_name]
-                    opponent_piece_attacked &= ~get_bb_from_square_int(action.destination_square)
+        # move piece to new square
+        action.piece.bb |= get_bb_from_square_int(action.destination_square)
 
         # update helper bitboards and chararray
         self._set_helper_bitboards()
@@ -216,7 +213,7 @@ class Board:
             raise Exception(f"Destination square of {action} is already occupied.")
 
         # if action type is ATTACK, check destination square is occupied by opponent
-        opponent_pieces = self.black_pieces if action.player == chess.WHITE else self.white_pieces
+        opponent_pieces = self.black_occupied if action.piece.color == chess.WHITE else self.white_occupied
         if action.type == ActionType.ATTACK and opponent_pieces & get_bb_from_square_int(action.destination_square) == 0:
             raise Exception(f"Destination square of attack {action} is not occupied by an opponent piece.")
 

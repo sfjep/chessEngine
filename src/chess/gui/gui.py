@@ -1,6 +1,7 @@
 import pygame as p
 import chess
 import sys
+from chess.utils import convert_rank_and_file_to_square_int
 from chess.gui.dragger import Dragger
 from chess.utils import get_rank_file_from_square_int
 
@@ -38,12 +39,12 @@ class GUI:
 
 		while True:
 			clock.tick(self.MAX_FPS)
+			self.destination_action_dict = {action.destination_square : action for action in self.valid_moves}
 			self.show_background()
 			self._draw_pieces(state.board)
 
 			if self.dragging:
 				if not self.valid_moves_drawn:
-					self.valid_moves = state.get_actions_from_origin_square(7 - self.clicked_rank, self.clicked_file)
 					self.valid_moves_drawn = True  # Set the flag to True after drawing them once
 
 			for event in p.event.get():
@@ -73,9 +74,14 @@ class GUI:
 					if self.dragging:
 
 						# Logic for placing the piece or reverting the move if it's invalid
-						new_position = (7-(event.pos[1] // self.SQUARE_SIZE), event.pos[0] // self.SQUARE_SIZE)
-
-						# apply_action()
+						rank = self.gui_row_to_rank(event.pos[1])
+						file = self.gui_col_to_file(event.pos[0])
+						dest_sq = convert_rank_and_file_to_square_int(rank, file)
+						try:
+							state.apply_action(self.destination_action_dict[dest_sq])
+						except KeyError:
+							print('Invalid location or color')
+							pass
 						# print(new_position)
 
 						# If the move is invalid, you can set new_position to original_position to revert the piece
@@ -100,7 +106,7 @@ class GUI:
 	def show_background(self):
 		for rank in range(self.DIMENSION):
 			for file in range(self.DIMENSION):
-				if self.dragging and ((7-rank) * 8 + file) in self.valid_moves:
+				if self.dragging and ((7-rank) * 8 + file) in self.destination_action_dict.keys():
 					color = self.VALID_MOVE_COLOR
 				else:
 					color = self._get_square_color(rank, file)
@@ -114,6 +120,12 @@ class GUI:
 						self.SQUARE_SIZE
 					)
 				)
+
+	def gui_col_to_file(self, event_pos):
+		return event_pos // self.SQUARE_SIZE
+
+	def gui_row_to_rank(self, event_pos):
+		return (7-event_pos // self.SQUARE_SIZE)
 
 	def _get_square_color(self, rank: int, file: int) -> p.Color:
 		if (rank+file)%2==0:
@@ -140,19 +152,3 @@ class GUI:
                             self.SQUARE_SIZE * 0.8
                         )
                     )
-
-	def draw_valid_moves(self, valid_moves):
-		print(valid_moves)
-		for valid_move in valid_moves:
-			rank, file = get_rank_file_from_square_int(valid_move)
-			p.draw.rect(
-				self.screen,
-				self.VALID_MOVE_COLOR,
-				p.Rect(
-					file * self.SQUARE_SIZE,
-					(7-rank) * self.SQUARE_SIZE,
-					self.SQUARE_SIZE,
-					self.SQUARE_SIZE,
-				)
-			)
-			p.display.update()

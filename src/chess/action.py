@@ -16,10 +16,9 @@ class ActionType(Enum):
 
 @dataclass
 class Action:
-    piece_type: int
+    piece: Piece
     origin_square: int
     destination_square: int
-    player: chess.Color
     type: ActionType
     promotion_to: Optional[Piece]
     is_long_castles: Optional[bool]
@@ -33,21 +32,20 @@ class Action:
             return False
 
     def __repr__(self):
-        piece = f"piece_type={self.piece_type}, "
+        piece = f"piece={self.piece}, "
         origin_sq = f"origin_square={self.origin_square}, "
         dest_sq = f"destination_square={self.destination_square}, "
-        player = f"player={self.player}, "
         type = f"type={self.type}"
         promo = ", promotion_to={self.promotion_to}" if self.promotion_to else ""
         castles = ", is_long_castles={self.is_long_castles}" if self.is_long_castles else ""
         check = ", is_check={self.is_check}" if self.is_check else ""
         checkmate = ", is_checkmate={self.is_checkmate}" if self.is_checkmate else ""
-        return f"{typename(self)}({piece}{origin_sq}{dest_sq}{player}{type}{promo}{castles}{check}{checkmate})"
+        return f"{typename(self)}({piece}{origin_sq}{dest_sq}{type}{promo}{castles}{check}{checkmate})"
 
     def __str__(self):
         if self.type == ActionType.CASTLING:
             return "O-O-O" if self.is_long_castles else "O-O"
-        piece = chess.PIECE_SYMBOLS[self.piece_type].upper()
+        piece = self.piece
         start = get_square_notation(self.origin_square)
         captures = "x" if self.type in [ActionType.ATTACK, ActionType.EN_PASSANT] else ""
         end = get_square_notation(self.destination_square)
@@ -75,10 +73,9 @@ class Action:
 
         return [
             Action(
-                piece_type=piece.type,
+                piece=piece,
                 origin_square=origin_square,
                 destination_square=get_square_int_from_bb(new_piece_position),
-                player=piece.color,
                 type=action_type,
                 promotion_to=kwargs.get("promotion_to", None),
                 is_long_castles=kwargs.get("is_long_castles", None),
@@ -87,6 +84,6 @@ class Action:
             )
             for new_piece_position in get_individual_ones_in_bb(moves)
         ]
-    
+
     def get_actions_from_origin_square(action_list, origin_square):
-        return [action.destination_square for action in action_list if origin_square == action.origin_square]
+        return [action for action in action_list if origin_square == action.origin_square]
