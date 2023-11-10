@@ -12,10 +12,10 @@ class FenUtils:
         return self.fen_fields[1] == "w"
 
     def get_can_castle_kingside(self):
-        return ("k" in self.fen_fields[2], "K" in self.fen_fields[2])
+        return ["k" in self.fen_fields[2], "K" in self.fen_fields[2]]
 
     def get_can_castle_queenside(self):
-        return ("q" in self.fen_fields[2], "Q" in self.fen_fields[2])
+        return ["q" in self.fen_fields[2], "Q" in self.fen_fields[2]]
 
     def get_en_passant_capture_square(self):
         if self.fen_fields[3] != "-":

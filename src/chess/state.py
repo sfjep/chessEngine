@@ -2,7 +2,7 @@ from copy import deepcopy
 import chess
 from chess.board import Board
 from dataclasses import dataclass
-from typing import List, Optional, Tuple
+from typing import List, Optional
 from chess.action import Action
 from chess.utils import convert_rank_and_file_to_square_int
 from chess.fen_utils import FenUtils
@@ -14,13 +14,13 @@ class State:
     fen: str
     board: Board
     turn: bool
-    can_castle_kingside: Tuple[bool, bool]
-    can_castle_queenside: Tuple[bool, bool]
+    can_castle_kingside: List[bool]
+    can_castle_queenside: List[bool]
     en_passant_capture_square: chess.Bitboard  # Destination square of attacking piece
     halfmove_count: int
     move_count: int
-    in_check: Tuple[bool, bool]
-    in_checkmate: Tuple[bool, bool]
+    in_check: List[bool]
+    in_checkmate: List[bool]
     valid_moves: List[Action]
 
     def __init__(self, fen=None) -> None:
