@@ -4,6 +4,8 @@ import sys
 from chess.utils import convert_rank_and_file_to_square_int
 from chess.gui.dragger import Dragger
 from chess.utils import get_rank_file_from_square_int
+from chess.audio import Audio
+from chess.action import ActionType
 
 class GUI:
 	WIDTH = HEIGHT = 512
@@ -23,6 +25,7 @@ class GUI:
 		self.dragger = Dragger()
 		self.dragging = False
 		self.original_position = None
+		self.audio = Audio()
 
 	def _load_images(self):
 		for piece in chess.PIECE_STRINGS:
@@ -78,6 +81,11 @@ class GUI:
 						file = self.gui_col_to_file(event.pos[0])
 						dest_sq = convert_rank_and_file_to_square_int(rank, file)
 						try:
+							action = self.destination_action_dict[dest_sq]
+							if action.type == ActionType.ATTACK:
+								Audio.capture()
+							else:
+								Audio.move()
 							state.apply_action(self.destination_action_dict[dest_sq])
 						except KeyError:
 							print('Invalid location or color')
