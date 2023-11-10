@@ -73,7 +73,10 @@ class GUI:
 					if self.dragging:
 
 						# Logic for placing the piece or reverting the move if it's invalid
-						new_position = (event.pos[1] // self.SQUARE_SIZE, event.pos[0] // self.SQUARE_SIZE)
+						new_position = (7-(event.pos[1] // self.SQUARE_SIZE), event.pos[0] // self.SQUARE_SIZE)
+
+						# apply_action()
+						# print(new_position)
 
 						# If the move is invalid, you can set new_position to original_position to revert the piece
 						self.dragging = False

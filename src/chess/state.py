@@ -76,8 +76,8 @@ class State:
             Convert possible moves to list of Actions
         """
         move_gen = MoveGenerator(self)
-        self.moves, self.attacks, self.castles, self.promotions = move_gen.get_piece_moves()
-        return self.moves + self.attacks + self.castles + self.promotions
+        self.moves, self.attacks, self.castles, self.promotions, self.en_passant = move_gen.get_piece_moves()
+        return self.moves + self.attacks + self.castles + self.promotions + self.en_passant
 
     def choose_action(self):
         '''
