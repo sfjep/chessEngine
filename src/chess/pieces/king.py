@@ -1,6 +1,6 @@
 import chess
 from chess.pieces.piece import Piece
-from chess.moves.move_utils import MoveUtils
+from chess.moves.move_utils import *
 
 
 class King(Piece):
@@ -13,13 +13,13 @@ class King(Piece):
         for color in chess.COLORS:
             for square, bb_square in zip(chess.SQUARES, chess.BB_SQUARES):
                 new_square = (
-                    MoveUtils.move_left(bb_square)
-                    | MoveUtils.move_right(bb_square)
-                    | MoveUtils.move_up(bb_square)
-                    | MoveUtils.move_up_left(bb_square)
-                    | MoveUtils.move_up_right(bb_square)
-                    | MoveUtils.move_down(bb_square)
-                    | MoveUtils.move_down_left(bb_square)
-                    | MoveUtils.move_down_right(bb_square)
+                    move_left(bb_square)
+                    | move_right(bb_square)
+                    | move_up(bb_square)
+                    | move_up_left(bb_square)
+                    | move_up_right(bb_square)
+                    | move_down(bb_square)
+                    | move_down_left(bb_square)
+                    | move_down_right(bb_square)
                 )
                 self.moves_lookup[square, color] = new_square
