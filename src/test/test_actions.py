@@ -1,5 +1,5 @@
 import unittest
-import chess
+import src.chess as chess
 from chess.action import Action, ActionType
 from chess.pieces.rook import Rook
 from chess.pieces.king import King

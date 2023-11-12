@@ -1,5 +1,5 @@
 import unittest
-import chess
+import src.chess as chess
 from src.chess.utils import (
     get_binary_string_from_bb,
     get_bb_from_binary_string,
