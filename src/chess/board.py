@@ -5,7 +5,7 @@ import chess
 import chess.pieces as Pieces
 from chess.action import Action, ActionType
 from chess.pieces.piece import Piece
-from chess.utils import get_individual_ones_in_bb, get_square_int_from_bb, get_bb_from_square_int, typename
+from chess.utils import get_individual_ones_in_bb, get_square_int_from_bb, get_bb_from_square_int, get_square_name_from_bb, typename
 from chess.moves.move_utils import move_down, move_up
 
 class Board:
@@ -170,33 +170,40 @@ class Board:
                 else:
                     self.board_arr[idx // 8, idx % 8] = f"B{chess.PIECE_SYMBOLS[piece.type].upper()}"
         self.board_arr = np.flip(self.board_arr, axis=0)
-        print(self.board_arr)
 
     def get_piece_name_from_board_dim(self, row: int, column: int) -> str:
         return self.board_arr[7-row][column]
 
-    def get_piece_name_from_square(self, square: int):
-        row = square // 8
-        col = square % 8
-        return self.get_piece_name_from_board_dim(row, col)
+    # def get_piece_name_from_square(self, square: int):
+    #     row = square // 8
+    #     col = square % 8
+    #     return self.get_piece_name_from_board_dim(row, col)
 
     def square_has_piece(self, row: int, column: int):
         return self.board_arr[row][column] != " "
 
     def apply_action(self, action: Action):
-        # if action is ATTACK, remove opponent piece
-        if action.type == ActionType.ATTACK:
-            self.apply_attack_action(action)
-
-        # if action is EN_PASSANT, remove opponent pawn
-        if action.type == ActionType.EN_PASSANT:
-            self.apply_enpassant_action(action)
-
         # remove piece from current square
         action.piece.bb &= ~get_bb_from_square_int(action.origin_square)
 
         # move piece to new square
         action.piece.bb |= get_bb_from_square_int(action.destination_square)
+
+        match action.type:
+            case ActionType.ATTACK:
+               self.apply_attack_action(action)
+
+        # if action is EN_PASSANT, remove opponent pawn
+            case ActionType.EN_PASSANT:
+                self.apply_enpassant_action(action)
+
+        # if action is CASTLING, move rook
+            case ActionType.CASTLING:
+                self.apply_castling_action(action)
+
+        # if action is PROMOTION, add promote_to piece to destination square
+            case ActionType.PROMOTION:
+                self.apply_promotion_action(action)
 
         # update helper bitboards and chararray
         self._set_helper_bitboards()
@@ -204,7 +211,7 @@ class Board:
 
 
     def apply_attack_action(self, action):
-        opponent_pieces = self.black_pieces if action.piece.color == chess.WHITE else self.white_pieces
+        opponent_pieces = self.black_pieces if action.piece.color else self.white_pieces
         for attacked_piece in opponent_pieces:
             if attacked_piece.bb & get_bb_from_square_int(action.destination_square) != 0:
                 attacked_piece.bb &= ~get_bb_from_square_int(action.destination_square)
@@ -220,6 +227,47 @@ class Board:
             attacked_pawn_sq_bb = move_up(get_bb_from_square_int(action.destination_square))
         # remove attacked pawn
         opponent_pawns.bb &= ~attacked_pawn_sq_bb
+
+
+    def apply_castling_action(self, action):
+        if action.is_long_castles:
+            rook_destination_bb = get_bb_from_square_int(chess.D1) if action.piece.color else get_bb_from_square_int(chess.D8)
+            rook_origin_square = get_bb_from_square_int(chess.A1) if action.piece.color else get_bb_from_square_int(chess.A8)
+        else:
+            rook_destination_bb = get_bb_from_square_int(chess.F1) if action.piece.color else get_bb_from_square_int(chess.F8)
+            rook_origin_square = get_bb_from_square_int(chess.H1) if action.piece.color else get_bb_from_square_int(chess.H8)
+        rook_to_move = self.WR if action.piece.color else self.BR
+        assert rook_destination_bb & self.all_occupied == 0, f"Rook is trying to move to a square occupied by another piece."
+        assert rook_to_move.bb & rook_origin_square != 0, f"Rook is not in the expected origin square {get_square_name_from_bb(rook_origin_square)}"
+        rook_to_move.bb &= ~rook_origin_square
+        rook_to_move.bb |= rook_destination_bb
+
+
+    def apply_promotion_action(self, action):
+        if action.promotion_to is None:
+            raise Exception("Attribute 'promotion_to' of action of type PROMOTION should have a value.")
+        match action.promotion_to:
+            case chess.QUEEN:
+                promote_to_piece = self.WQ if action.piece.color else self. BQ
+
+            case chess.KNIGHT:
+                promote_to_piece = self.WN if action.piece.color else self. BN
+
+            case chess.BISHOP:
+                promote_to_piece = self.WB if action.piece.color else self. BB
+
+            case chess.ROOK:
+                promote_to_piece = self.WR if action.piece.color else self. BR
+
+        # check if action is an attack, i.e. there is an opponent piece in destination square
+        destination_bb = get_bb_from_square_int(action.destination_square)
+        opponent_occupied = self.black_occupied if action.piece.color else self.white_occupied
+        if opponent_occupied & destination_bb != 0:
+            self.apply_attack_action(action)
+
+        promote_to_piece.bb |= destination_bb
+        # remove pawn from destination, as it was added by caller of this function
+        action.piece.bb &= ~destination_bb
 
 
     def validate_action(self, piece: Piece, action: Action):

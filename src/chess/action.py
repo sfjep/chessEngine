@@ -21,7 +21,7 @@ class Action:
     origin_square: int
     destination_square: int
     type: ActionType
-    promotion_to: Optional[Piece]
+    promotion_to: Optional[int]
     is_long_castles: Optional[bool]
     is_check: Optional[bool]
     is_checkmate: Optional[bool]
@@ -57,7 +57,7 @@ class Action:
 
     def is_two_step_pawn_move(self):
         return self.piece.type == chess.PAWN and (abs(self.destination_square - self.origin_square) == 16)
-    
+
     def get_en_passent_capture_square(self) -> chess.Bitboard:
         if self.is_two_step_pawn_move():
             if self.piece.color == chess.WHITE:
@@ -97,4 +97,4 @@ class Action:
         ]
 
     def get_actions_from_origin_square(action_list, origin_square):
-        return [action for action in action_list if origin_square == action.origin_square]   
+        return [action for action in action_list if origin_square == action.origin_square]

@@ -77,8 +77,8 @@ class State:
             Convert possible moves to list of Actions
         """
         move_gen = MoveGenerator(self)
-        self.moves, self.attacks, self.castles, self.promotions, self.en_passant = move_gen.get_piece_moves()
-        return self.moves + self.attacks + self.castles + self.promotions + self.en_passant
+        self.moves = move_gen.get_piece_moves()
+        return self.moves
 
     def choose_action(self):
         '''
@@ -90,8 +90,8 @@ class State:
         new_state = self
         new_state.parent = deepcopy(self)
         new_state.board.apply_action(action)
-        new_state.turn = not self.turn
-        new_state.halfmove_count = self.halfmove_count + 1
+        new_state.turn = not new_state.turn
+        new_state.halfmove_count += 1
         new_state.move_count = new_state.halfmove_count // 2
         new_state.en_passant_capture_square = chess.BB_EMPTY
 
@@ -107,6 +107,8 @@ class State:
 
         new_state.valid_moves = new_state.get_possible_actions()
 
+    def unapply_action(self):
+        self = self.parent
 
     def get_actions_from_origin_square(self, rank: int, file: int):
         square_int = convert_rank_and_file_to_square_int(rank, file)
