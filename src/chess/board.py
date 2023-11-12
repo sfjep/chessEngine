@@ -172,7 +172,7 @@ class Board:
         print(self.board_arr)
 
     def get_piece_name_from_board_dim(self, row: int, column: int) -> str:
-        return self.board_arr[row][column]
+        return self.board_arr[7-row][column]
 
     def get_piece_name_from_square(self, square: int):
         row = square // 8

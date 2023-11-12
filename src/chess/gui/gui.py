@@ -3,15 +3,16 @@ import chess
 import sys
 from chess.utils import convert_rank_and_file_to_square_int
 from chess.gui.dragger import Dragger
-from chess.utils import get_rank_file_from_square_int
 from chess.audio import Audio
 from chess.action import ActionType
 
 class GUI:
+	FULL_WIDTH = 1920
+	FULL_HEIGHT = 1080
 	WIDTH = HEIGHT = 512
 	DIMENSION = 8
 	SQUARE_SIZE = HEIGHT // DIMENSION
-	MAX_FPS = 12
+	MAX_FPS = 60
 	IMAGES = {}
 	VALID_MOVE_COLOR = p.Color(235,155,155)
 	LIGHT_SQ_COLOR = p.Color(248,220,180)
@@ -19,7 +20,8 @@ class GUI:
 
 	def __init__(self):
 		p.init()
-		self.screen = p.display.set_mode((self.WIDTH, self.HEIGHT))
+		self.full_screen = p.display.set_mode((self.FULL_WIDTH, self.FULL_HEIGHT))
+		self.chess_screen = p.Surface((self.WIDTH, self.HEIGHT))
 		p.display.set_caption('Chess')
 		self._load_images()
 		self.dragger = Dragger()
@@ -53,24 +55,27 @@ class GUI:
 			for event in p.event.get():
 				if event.type == p.MOUSEBUTTONDOWN:
 					position = event.pos
-					self.clicked_rank = position[1] // self.SQUARE_SIZE
-					self.clicked_file = position[0] // self.SQUARE_SIZE
 
-					if state.board.square_has_piece(self.clicked_rank, self.clicked_file):
-						print("Clicked on a piece")
-						self.dragging = True
-						self.original_position = (self.clicked_rank, self.clicked_file)
-						self.valid_moves = state.get_actions_from_origin_square(7 - self.clicked_rank, self.clicked_file)
+					if position[0] >= (self.FULL_WIDTH - self.WIDTH) and position[1] <= self.HEIGHT:
+						self.clicked_rank = self.gui_row_to_rank(position[1])
+						self.clicked_file = self.gui_col_to_file(position[0])
 
-						print("Clicked rank: ", self.clicked_rank)
-						print("Clicked file: ", self.clicked_file)
-						piece = state.board.get_piece_name_from_board_dim(self.clicked_rank, self.clicked_file)
-						self.dragger.update_position(position, self.IMAGES[piece])
+						if state.board.square_has_piece(7-self.clicked_rank, self.clicked_file):
+							print("Clicked on a piece")
+							self.dragging = True
+							self.original_position = (7-self.clicked_rank, self.clicked_file)
+							self.valid_moves = state.get_actions_from_origin_square(self.clicked_rank, self.clicked_file)
+
+							print("Clicked rank: ", self.clicked_rank)
+							print("Clicked file: ", self.clicked_file)
+							piece = state.board.get_piece_name_from_board_dim(self.clicked_rank, self.clicked_file)
+							self.dragger.update_position(position, self.IMAGES[piece])
 
 				# Drag piece
 				elif event.type == p.MOUSEMOTION:
 					if self.dragging:
-						self.dragger.update_position(event.pos)
+						translated_pos = (event.pos[0] - (self.FULL_WIDTH - self.WIDTH), event.pos[1])
+						self.dragger.update_position(translated_pos)
 
 				# Drop
 				elif event.type == p.MOUSEBUTTONUP:
@@ -105,8 +110,11 @@ class GUI:
 					sys.exit()
 
 			if self.dragging and self.dragger.get_piece():
-				self.screen.blit(self.dragger.get_piece(), (self.dragger.x_coor - self.SQUARE_SIZE // 2, self.dragger.y_coor - self.SQUARE_SIZE // 2))
+				self.chess_screen.blit(self.dragger.get_piece(), self.dragger.get_position_tuple(self.SQUARE_SIZE))
 
+
+			self.render_settings(state)
+			self.full_screen.blit(self.chess_screen, (self.FULL_WIDTH - self.WIDTH, 0))
 			p.display.flip()
 
 
@@ -119,7 +127,7 @@ class GUI:
 				else:
 					color = self._get_square_color(rank, file)
 				p.draw.rect(
-					self.screen,
+					self.chess_screen,
 					color,
 					p.Rect(
 						file * self.SQUARE_SIZE,
@@ -130,7 +138,7 @@ class GUI:
 				)
 
 	def gui_col_to_file(self, event_pos):
-		return event_pos // self.SQUARE_SIZE
+		return (event_pos - (self.FULL_WIDTH - self.WIDTH)) // self.SQUARE_SIZE
 
 	def gui_row_to_rank(self, event_pos):
 		return (7-event_pos // self.SQUARE_SIZE)
@@ -149,9 +157,9 @@ class GUI:
 				if self.dragging and (rank, file) == self.original_position:
 					# Skip drawing the piece being dragged
 					continue
-				piece = board.get_piece_name_from_board_dim(rank, file)
+				piece = board.get_piece_name_from_board_dim(7-rank, file)
 				if piece != " ":
-					self.screen.blit(
+					self.chess_screen.blit(
 						self.IMAGES[piece],
 						p.Rect(
                             file * self.SQUARE_SIZE,
@@ -160,3 +168,36 @@ class GUI:
                             self.SQUARE_SIZE * 0.8
                         )
                     )
+
+	def render_settings(self, state):
+		# Create back screen
+		self.full_screen.fill(p.Color('black'), (0, 0, self.FULL_WIDTH - self.WIDTH, self.FULL_HEIGHT))
+
+        # Set the fonts for the settings text
+		font_header = p.font.Font(None, 36)
+		font_text = p.font.Font(None, 28)
+
+		header = font_header.render('Game Settings', True, p.Color('white'))
+		fen_str = font_text.render('FEN: ' + state.fen, True, p.Color('white'))
+		halfmove_count = font_text.render('Halfmove count: ' + str(state.halfmove_count), True, p.Color('white'))
+		move_count = font_text.render('Move count: ' + str(state.move_count), True, p.Color('white'))
+		is_check = font_text.render(f'In check: ' + str(state.in_check[state.turn]), True, p.Color('white'))
+
+		self.full_screen.blit(header, (50, 50))
+		self.full_screen.blit(fen_str, (50, 100))
+		self.full_screen.blit(halfmove_count, (50, 150))
+		self.full_screen.blit(move_count, (50, 200))
+		self.full_screen.blit(is_check, (50, 250))
+
+		# If there are valid moves, render them
+		if self.valid_moves:
+			# Construct the string for valid moves
+			actions_string = ", ".join(str(move) for move in self.valid_moves)
+			actions_surface = font_text.render('Possible actions: ' + actions_string, True, p.Color('white'))
+			self.full_screen.blit(actions_surface, (50, 300))
+
+        # Redraw the chess screen on the right side
+		self.full_screen.blit(self.chess_screen, (self.FULL_WIDTH - self.WIDTH, self.FULL_HEIGHT))
+
+        # Update the display
+		p.display.flip()

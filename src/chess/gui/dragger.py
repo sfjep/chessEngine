@@ -18,6 +18,10 @@ class Dragger:
         if piece is not None:  # if a piece is provided, store it
             self.piece = piece
 
+    def get_position_tuple(self, square_size):
+        # Adjust the position so the center of the piece image follows the cursor
+        return (self.x_coor - square_size // 2, self.y_coor - square_size // 2)
+
     def get_piece(self):  # method to get the current piece
         return self.piece
 
