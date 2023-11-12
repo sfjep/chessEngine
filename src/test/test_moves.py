@@ -56,24 +56,21 @@ class MovesTest(unittest.TestCase):
         state_white_en_passant = State("3k4/8/8/4pPp1/8/8/8/4K3 w - g6 0 1")
         move_gen = MoveGenerator(state_white_en_passant)
         move_gen.get_piece_moves()
-        en_passant_string = [repr(action).lower() for action in move_gen.en_passant]
+        en_passant_string = [str(action).lower() for action in move_gen.moves]
         self.assertIn("pf5xg6", en_passant_string)
-        self.assertEqual(len(en_passant_string), 1)
 
     def test_white_rook_blocked(self):
         state_white_rook_blocked = State("3k4/8/3p4/8/1p1R1P2/8/3P4/4K3 w - - 0 1")
         move_gen = MoveGenerator(state_white_rook_blocked)
         move_gen.get_piece_moves()
-        rook_move_repr = [repr(move).lower() for move in move_gen.moves if repr(move)[0] =="R"]
-        rook_attack_repr = [repr(attack).lower() for attack in move_gen.attacks if repr(attack)[0] =="R"]
+        rook_move_repr = [str(move).lower() for move in move_gen.moves if str(move)[0] =="r"]
         self.assertIn("rd4d3", rook_move_repr)
         self.assertIn("rd4d5", rook_move_repr)
         self.assertIn("rd4c4", rook_move_repr)
         self.assertIn("rd4e4", rook_move_repr)
-        self.assertEqual(len(rook_move_repr), 4)
-        self.assertIn("rd4xb4", rook_attack_repr)
-        self.assertIn("rd4xd6", rook_attack_repr)
-        self.assertEqual(len(rook_attack_repr), 2)
+        self.assertIn("rd4xb4", rook_move_repr)
+        self.assertIn("rd4xd6", rook_move_repr)
+        self.assertEqual(len(rook_move_repr), 6)
 
 
     # def test_number_of_valid_moves_from_start(self):

@@ -27,11 +27,5 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Set PYTHONPATH
-      run: |
-        PWD=$(pwd)
-        export PYTHONPATH=$PYTHONPATH:$PWD/src:$PWD/src/tests:$PWD/src/chess
-        echo "PYTHONPATH=$PYTHONPATH"
-
     - name: Run unittests
-      run: python -m unittest discover -s src/test
+      run: python -m unittest discover -s src -v
