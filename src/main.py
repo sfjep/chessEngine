@@ -11,12 +11,6 @@ def main():
 
     print("Moves")
     for move in state.moves: print(move)
-    print("Attacks")
-    for move in state.attacks: print(move)
-    print("Castles")
-    for move in state.castles: print(move)
-    print("Promotions")
-    for move in state.promotions: print(move)
 
     gui = GUI()
     gui.run(state)

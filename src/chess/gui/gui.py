@@ -20,8 +20,12 @@ class GUI:
 
 	def __init__(self):
 		p.init()
-		self.full_screen = p.display.set_mode((self.FULL_WIDTH, self.FULL_HEIGHT))
+		display_info = p.display.Info()
+		self.FULL_WIDTH, self.FULL_HEIGHT = display_info.current_w, display_info.current_h
 		self.chess_screen = p.Surface((self.WIDTH, self.HEIGHT))
+
+		self.full_screen = p.display.set_mode((self.FULL_WIDTH, self.FULL_HEIGHT), p.FULLSCREEN)
+
 		p.display.set_caption('Chess')
 		self._load_images()
 		self.dragger = Dragger()
@@ -87,7 +91,7 @@ class GUI:
 						dest_sq = convert_rank_and_file_to_square_int(rank, file)
 						try:
 							action = self.destination_action_dict[dest_sq]
-							if action.type == ActionType.ATTACK:
+							if action.type == ActionType.ATTACK or action.type == ActionType.EN_PASSANT:
 								Audio.capture()
 							else:
 								Audio.move()
