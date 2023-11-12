@@ -93,6 +93,7 @@ class State:
         new_state.turn = not self.turn
         new_state.halfmove_count = self.halfmove_count + 1
         new_state.move_count = new_state.halfmove_count // 2
+        new_state.en_passant_capture_square = chess.BB_EMPTY
 
         if action.piece.type == chess.KING:
             new_state.can_castle_kingside[action.piece.color] = False
