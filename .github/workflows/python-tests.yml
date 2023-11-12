@@ -30,7 +30,7 @@ jobs:
     - name: Set PYTHONPATH
       run: |
         PWD=$(pwd)
-        export PYTHONPATH=$PYTHONPATH:$PWD/src:$PWD/src/tests:PWD/src/chess
+        export PYTHONPATH=$PYTHONPATH:$PWD/src:$PWD/src/tests:$PWD/src/chess
         echo "PYTHONPATH=$PYTHONPATH"
 
     - name: Run unittests
