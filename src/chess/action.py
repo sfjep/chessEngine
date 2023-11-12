@@ -4,7 +4,8 @@ from typing import Optional
 
 import chess
 from chess.pieces.piece import Piece
-from chess.utils import get_individual_ones_in_bb, get_square_int_from_bb, get_square_notation, typename
+from chess.utils import get_bb_from_square_int, get_individual_ones_in_bb, get_square_int_from_bb, get_square_notation, typename
+from chess.moves.move_utils import move_down, move_up
 
 
 class ActionType(Enum):
@@ -54,6 +55,16 @@ class Action:
         checkmate = "#" if self.is_checkmate else ""
         return f"{piece}{start}{captures}{end}{promotion_to}{check}{checkmate}"
 
+    def is_two_step_pawn_move(self):
+        return self.piece.type == chess.PAWN and (abs(self.destination_square - self.origin_square) == 16)
+    
+    def get_en_passent_capture_square(self) -> chess.Bitboard:
+        if self.is_two_step_pawn_move():
+            if self.piece.color == chess.WHITE:
+                return move_up(get_bb_from_square_int(self.origin_square))
+            else:
+                return move_down(get_bb_from_square_int(self.origin_square))
+
     @staticmethod
     def generate_actions(moves: chess.Bitboard, piece: Piece, origin_square: int, action_type: ActionType, **kwargs):
         """
@@ -86,4 +97,4 @@ class Action:
         ]
 
     def get_actions_from_origin_square(action_list, origin_square):
-        return [action for action in action_list if origin_square == action.origin_square]
+        return [action for action in action_list if origin_square == action.origin_square]   

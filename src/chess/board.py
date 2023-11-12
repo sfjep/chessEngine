@@ -6,6 +6,7 @@ import chess.pieces as Pieces
 from chess.action import Action, ActionType
 from chess.pieces.piece import Piece
 from chess.utils import get_individual_ones_in_bb, get_square_int_from_bb, get_bb_from_square_int, typename
+from chess.moves.move_utils import move_down, move_up
 
 class Board:
     WP: Piece
@@ -183,14 +184,13 @@ class Board:
         return self.board_arr[row][column] != " "
 
     def apply_action(self, action: Action):
-
         # if action is ATTACK, remove opponent piece
         if action.type == ActionType.ATTACK:
-            opponent_pieces = self.black_pieces if action.piece.color == chess.WHITE else self.white_pieces
-            for attacked_piece in opponent_pieces:
-                if attacked_piece.bb & get_bb_from_square_int(action.destination_square) != 0:
-                    attacked_piece.bb &= ~get_bb_from_square_int(action.destination_square)
-                    break
+            self.apply_attack_action(action)
+
+        # if action is EN_PASSANT, remove opponent pawn
+        if action.type == ActionType.EN_PASSANT:
+            self.apply_enpassant_action(action)
 
         # remove piece from current square
         action.piece.bb &= ~get_bb_from_square_int(action.origin_square)
@@ -201,6 +201,25 @@ class Board:
         # update helper bitboards and chararray
         self._set_helper_bitboards()
         self._set_board_chararray()
+
+
+    def apply_attack_action(self, action):
+        opponent_pieces = self.black_pieces if action.piece.color == chess.WHITE else self.white_pieces
+        for attacked_piece in opponent_pieces:
+            if attacked_piece.bb & get_bb_from_square_int(action.destination_square) != 0:
+                attacked_piece.bb &= ~get_bb_from_square_int(action.destination_square)
+                break
+
+    def apply_enpassant_action(self, action):
+        # find square of attacked piece
+        if action.piece.color == chess.WHITE:
+            opponent_pawns = self.BP
+            attacked_pawn_sq_bb = move_down(get_bb_from_square_int(action.destination_square))
+        else:
+            opponent_pawns = self.WP
+            attacked_pawn_sq_bb = move_up(get_bb_from_square_int(action.destination_square))
+        # remove attacked pawn
+        opponent_pawns.bb &= ~attacked_pawn_sq_bb
 
 
     def validate_action(self, piece: Piece, action: Action):

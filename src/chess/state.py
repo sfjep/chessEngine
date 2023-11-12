@@ -97,7 +97,9 @@ class State:
             new_state.can_castle_kingside[action.piece.color] = False
             new_state.can_castle_queenside[action.piece.color] = False
 
-        # Set en passant
+        if action.is_two_step_pawn_move():
+            # Set en passant capture square
+            new_state.en_passant_capture_square = action.get_en_passent_capture_square()
 
         new_state.valid_moves = new_state.get_possible_actions()
 
