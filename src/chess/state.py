@@ -7,6 +7,7 @@ from chess.action import Action
 from chess.utils import convert_rank_and_file_to_square_int
 from chess.fen_utils import FenUtils
 from chess.moves.moves import MoveGenerator
+from chess.fen import Fen
 
 @dataclass
 class State:
@@ -100,6 +101,8 @@ class State:
         if action.is_two_step_pawn_move():
             # Set en passant capture square
             new_state.en_passant_capture_square = action.get_en_passent_capture_square()
+
+        new_state.fen = Fen.get_fen_from_state(new_state)
 
         new_state.valid_moves = new_state.get_possible_actions()
 
