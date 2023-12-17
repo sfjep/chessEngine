@@ -5,7 +5,7 @@ import chess
 import chess.pieces as Pieces
 from chess.action import Action, ActionType
 from chess.pieces.piece import Piece
-from chess.utils import get_individual_ones_in_bb, get_square_int_from_bb, get_bb_from_square_int, get_square_name_from_bb, typename
+from chess.utils import get_individual_ones_in_bb, get_square_int_from_bb, get_bb_from_square_int, get_square_name_from_bb, typename, print_bitboard
 from chess.moves.move_utils import move_down, move_up
 
 class Board:
@@ -32,6 +32,7 @@ class Board:
     char_to_piece: Dict[str, Piece]
 
     def __init__(self, fen_board: str = None):
+        self.fen_board = fen_board
         self._create_pieces()
 
         self.char_to_piece = {
@@ -118,8 +119,8 @@ class Board:
             self.BP.bb | self.BR.bb | self.BB.bb | self.BN.bb | self.BQ.bb | self.BK.bb
         )
         self.all_occupied = self.white_occupied | self.black_occupied
-        self.white_pieces = [self.WP, self.WR, self.WB, self.WN, self.WQ, self.WK]
-        self.black_pieces = [self.BP, self.BR, self.BB, self.BN, self.BQ, self.BK]
+        self.white_pieces = [self.WP, self.WN, self.WB, self.WR, self.WQ, self.WK]
+        self.black_pieces = [self.BP, self.BN, self.BB, self.BR, self.BQ, self.BK]
         self.all_pieces = self.white_pieces + self.black_pieces
 
         self.pieces = {
@@ -184,10 +185,22 @@ class Board:
 
     def apply_action(self, action: Action):
         # remove piece from current square
-        action.piece.bb &= ~get_bb_from_square_int(action.origin_square)
+        # board_piece = piece for piece in self.white_pieces if piece.type == action.piece.type
+        board_piece = self.white_pieces[action.piece.type-1] if action.piece.color else self.black_pieces[action.piece.type-1]
+        assert board_piece.type == action.piece.type
+
+        if board_piece.type == chess.ROOK:
+            print("board pre", id(self))
+            print("\nRook pre change")
+            print_bitboard(board_piece.bb)
+            print(action)
+        board_piece.bb &= ~get_bb_from_square_int(action.origin_square)
 
         # move piece to new square
-        action.piece.bb |= get_bb_from_square_int(action.destination_square)
+        board_piece.bb |= get_bb_from_square_int(action.destination_square)
+        if board_piece.type == chess.ROOK:
+            print("\nRook post change")
+            print_bitboard(board_piece.bb)
 
         match action.type:
             case ActionType.ATTACK:
@@ -203,7 +216,7 @@ class Board:
 
         # if action is PROMOTION, add promote_to piece to destination square
             case ActionType.PROMOTION:
-                self.apply_promotion_action(action)
+                self.apply_promotion_action(board_piece, action)
 
         # update helper bitboards and chararray
         self._set_helper_bitboards()
@@ -243,7 +256,7 @@ class Board:
         rook_to_move.bb |= rook_destination_bb
 
 
-    def apply_promotion_action(self, action):
+    def apply_promotion_action(self, board_piece, action):
         if action.promotion_to is None:
             raise Exception("Attribute 'promotion_to' of action of type PROMOTION should have a value.")
         match action.promotion_to:
@@ -267,7 +280,7 @@ class Board:
 
         promote_to_piece.bb |= destination_bb
         # remove pawn from destination, as it was added by caller of this function
-        action.piece.bb &= ~destination_bb
+        board_piece.bb &= ~destination_bb
 
 
     def validate_action(self, piece: Piece, action: Action):

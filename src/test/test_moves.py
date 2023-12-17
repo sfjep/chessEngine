@@ -41,16 +41,15 @@ class MovesTest(unittest.TestCase):
         self.state_black_pinned_pawn = State("4k3/5p2/8/7B/8/8/8/4K3 b - - 0 1")
         self.state_black_pinned_bishop = State("4k3/5b2/8/7B/8/8/8/4K3 b - - 0 1")
 
-    # def test_white_promotion(self):
-    #     state_white_promote = State("8/6P1/2k5/4K3/8/8/8/8 w - - 0 1")
-    #     move_gen = MoveGenerator(state_white_promote)
-    #     move_gen.get_piece_moves()
-    #     promotion_strings = [repr(promo).lower() for promo in move_gen.promotions]
-    #     self.assertIn("pg7g8/q", promotion_strings)
-    #     self.assertIn("pg7g8/n", promotion_strings)
-    #     self.assertIn("pg7g8/r", promotion_strings)
-    #     self.assertIn("pg7g8/b", promotion_strings)
-    #     self.assertEqual(len(promotion_strings), 4)
+    def test_white_promotion(self):
+        state_white_promote = State("8/6P1/2k5/4K3/8/8/8/8 w - - 0 1")
+        move_gen = MoveGenerator(state_white_promote)
+        move_gen.get_piece_moves()
+        promotion_strings = [str(promo).lower() for promo in move_gen.moves]
+        self.assertIn("pg7g8/q", promotion_strings)
+        self.assertIn("pg7g8/n", promotion_strings)
+        self.assertIn("pg7g8/r", promotion_strings)
+        self.assertIn("pg7g8/b", promotion_strings)
 
     def test_white_enpassant(self):
         state_white_en_passant = State("3k4/8/8/4pPp1/8/8/8/4K3 w - g6 0 1")

@@ -37,7 +37,7 @@ def get_bb_from_square_int(square_int: int):
     return chess.BB_SQUARES[square_int]
 
 def get_square_name_from_bb(bb: int):
-    return chess.SQUARE_INT_NAME_DICT(get_square_int_from_bb(bb))
+    return chess.SQUARE_INT_NAME_DICT[get_square_int_from_bb(bb)]
 
 def get_file_from_bb(bb: int):
     if bb & chess.BB_FILE_A != 0: return chess.BB_FILE_A

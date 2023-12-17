@@ -6,12 +6,13 @@ from chess.utils import get_individual_ones_in_bb, get_square_int_from_bb
 
 
 class MoveGenerator:
-    def __init__(self, state):
+    def __init__(self, state, color):
         self.state = state
-        self.color = state.turn
-        self.player_board = state.board.pieces[self.color]
+        self.color = color
+        self.player_board = state.board.pieces[color]
         self.player_occupied = self.player_board['PLAYER_OCCUPIED']
         self.opponent_occupied = self.player_board['OPPONENT_OCCUPIED']
+        self.opponent_king = state.king_bb[not(color)]
         self.moves = []
 
     def get_piece_moves(self):
@@ -39,7 +40,8 @@ class MoveGenerator:
 
             promotion_rank = chess.BB_PROMOTION_RANK[self.color]
             self.moves += Action.generate_actions(destination_squares & ~attack_squares & ~promotion_rank, pawns, current_piece_index, ActionType.MOVE)
-            self.moves += Action.generate_actions(attack_squares & ~promotion_rank, pawns, current_piece_index, ActionType.ATTACK)
+            self.moves += Action.generate_actions(attack_squares & ~promotion_rank & self.opponent_king, pawns, current_piece_index, ActionType.ATTACK, is_check=True)
+            self.moves += Action.generate_actions(attack_squares & ~promotion_rank & ~self.opponent_king, pawns, current_piece_index, ActionType.ATTACK)
             self.moves += Action.generate_actions(en_passant_dest_squares, pawns, current_piece_index, ActionType.EN_PASSANT)
             self._get_promotion_moves(destination_squares | attack_squares, current_piece_index, pawns)
 
@@ -69,7 +71,8 @@ class MoveGenerator:
             attack_moves = knights.moves_lookup[square_int] & ~self.player_occupied & self.opponent_occupied
 
             self.moves += Action.generate_actions(destination_squares, knights, square_int, ActionType.MOVE)
-            self.moves += Action.generate_actions(attack_moves, knights, square_int, ActionType.ATTACK)
+            self.moves += Action.generate_actions(attack_moves & ~self.opponent_king, knights, square_int, ActionType.ATTACK)
+            self.moves += Action.generate_actions(attack_moves & self.opponent_king, knights, square_int, ActionType.ATTACK, is_check=True)
 
     def _get_bishop_moves(self):
         bishops = self.player_board["BISHOP"]
@@ -99,8 +102,10 @@ class MoveGenerator:
 
             self.moves += Action.generate_actions(destination_squares, king, square_int, ActionType.MOVE)
             self.moves += Action.generate_actions(attack_squares, king, square_int, ActionType.ATTACK)
-            self.moves += Action.generate_actions(queenside_castles_bb, king, square_int, ActionType.CASTLING, is_long_castles=True)
-            self.moves += Action.generate_actions(kingside_castles_bb, king, square_int, ActionType.CASTLING, is_long_castles=False)
+
+            if not(self.state.in_check[self.color]):
+                self.moves += Action.generate_actions(queenside_castles_bb, king, square_int, ActionType.CASTLING, is_long_castles=True)
+                self.moves += Action.generate_actions(kingside_castles_bb, king, square_int, ActionType.CASTLING, is_long_castles=False)
 
 
     def _add_castling(self):
@@ -113,6 +118,7 @@ class MoveGenerator:
             if self.state.can_castle_kingside[self.color] and self._kingside_castling_squares_empty():
                 kingside_castles_bb = chess.KINGSIDE_CASTLE_SQUARE[self.color]
             return kingside_castles_bb, queenside_castles_bb
+        return chess.BB_EMPTY, chess.BB_EMPTY
 
     def _queenside_castling_squares_empty(self):
         return (chess.BB_QUEENSIDE_CASTLE_SQUARES[self.color] & (self.opponent_occupied | self.player_occupied)) == chess.BB_EMPTY
@@ -129,16 +135,15 @@ class MoveGenerator:
                 destination_squares &= ~mask_own_pieces(piece_pos_int, move_range, self.player_occupied, mask_upwards)
                 destination_squares &= ~mask_opponent_pieces(piece_pos_int, move_range, self.opponent_occupied, mask_upwards)
 
+
             self.moves += Action.generate_actions(destination_squares & ~self.opponent_occupied, piece, piece_pos_int, ActionType.MOVE)
-            self.moves += Action.generate_actions(destination_squares & self.opponent_occupied, piece, piece_pos_int, ActionType.ATTACK)
+            self.moves += Action.generate_actions(destination_squares & self.opponent_occupied & ~self.opponent_king, piece, piece_pos_int, ActionType.ATTACK)
+            self.moves += Action.generate_actions(destination_squares & self.opponent_occupied & self.opponent_king, piece, piece_pos_int, ActionType.ATTACK, is_check=True)
 
 
 """
-In check?
 
 Castles?
-    # Has moved?
-    # Rook moved?
     # Squares in between occupied?
     # Squres in between attacked?
     # In check?

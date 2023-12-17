@@ -98,3 +98,4 @@ class Action:
 
     def get_actions_from_origin_square(action_list, origin_square):
         return [action for action in action_list if origin_square == action.origin_square]
+
