@@ -12,7 +12,7 @@ class MoveGenerator:
         self.player_board = state.board.pieces[color]
         self.player_occupied = self.player_board['PLAYER_OCCUPIED']
         self.opponent_occupied = self.player_board['OPPONENT_OCCUPIED']
-        self.opponent_king = state.king_bb[not(color)]
+        self.opponent_king = state.board.pieces[not(color)]["KING"].bb
         self.moves = []
 
     def get_piece_moves(self):
