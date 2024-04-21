@@ -60,6 +60,9 @@ class State:
             self.opponent_occupied = self.board.white_occupied
 
     def is_in_check(self):
+        print("is_in_check", id(self))
+        print("opponent_moves", self.opponent_moves)
+        print(self.board.board_arr)
         if self.opponent_moves:
             if any([move.is_check for move in self.opponent_moves]):
                 self.in_check[self.turn] = True
@@ -67,6 +70,7 @@ class State:
                 self.in_check[self.turn] = False
         else:
             self.in_check = [False, False]
+            print("WTF")
             self.opponent_moves = self.get_possible_actions(not(self.turn))
             self.is_in_check()
 
@@ -75,6 +79,11 @@ class State:
         self.in_checkmate = [False, False]
 
     def get_possible_actions(self, color):
+        print("get_possible_actions", id(self))
+        all_moves = self.get_all_actions(color)
+        return self.get_valid_moves(all_moves)
+
+    def get_all_actions(self, color):
         """
         Generate list of actions possible in state
             Check which color is playing
@@ -83,24 +92,37 @@ class State:
             Convert possible moves to list of Actions
         """
         move_gen = MoveGenerator(self, color)
-        self.moves = move_gen.get_piece_moves()
-        return self.moves
+        print("movegen", id(move_gen))
+        return move_gen.get_piece_moves()
+
+    def get_valid_moves(self, all_moves):
+        deep_copies = dict()
+        valid_moves = []
+        for count, move in enumerate(all_moves):
+            search_state = deepcopy(self)
+            deep_copies[count] = id(search_state.board)
+            if not search_state.is_suicide(move):
+                valid_moves.append(move)
+        return valid_moves
+
 
     def choose_action(self):
-        '''
-        Result is a state variable called self.chosen_action
-        '''
+        '''Result is a state variable called self.chosen_action'''
         pass
 
     def apply_action(self, action: Action, depth=0):
         print(f"Applying action {action} with depth {depth}")
         new_state = self
         new_state.parent = deepcopy(self)
-
         new_state.board.apply_action(action)
 
+
         new_state.increment_move_counters()
+
         new_state.en_passant_capture_square = chess.BB_EMPTY
+        if action.is_two_step_pawn_move():
+            new_state.en_passant_capture_square = action.get_en_passent_capture_square()
+
         new_state.update_castling_rights(action)
 
         new_state.turn = not new_state.parent.turn
@@ -108,36 +130,25 @@ class State:
         new_state.set_opponent_moves()
         new_state.is_in_check()
 
-        if action.is_two_step_pawn_move():
-            new_state.en_passant_capture_square = action.get_en_passent_capture_square()
-
         new_state.fen = Fen.get_fen_from_state(new_state)
 
         if depth == 0:
             new_state.valid_moves = new_state.get_possible_actions(new_state.turn)
 
-            deep_copies = dict()
-            # remove moves that put me in check in the next state
-            for count, move in enumerate(new_state.valid_moves):
-                search_state = deepcopy(self)
-                deep_copies[count] = id(search_state.board)
-                if search_state.is_reveal_check_move(move):
-                    assert move in new_state.valid_moves
-                    new_state.valid_moves.remove(move)
-                    assert move not in new_state.valid_moves
-
         return new_state
 
 
-    def is_reveal_check_move(self, action):
+    def is_suicide(self, action):
+        print("is_suicide", id(self))
         self.board.apply_action(action)
-        self.set_opponent_moves()
+        print(self.board.board_arr)
+        self.opponent_moves = self.get_all_actions(not self.turn)
         self.is_in_check()
         return self.in_check[self.turn]
 
     def set_opponent_moves(self):
+        print("set_opponent_moves", id(self))
         self.opponent_moves = self.get_possible_actions(not self.turn)
-
 
     def update_castling_rights(self, action):
         if action.piece.type == chess.KING:

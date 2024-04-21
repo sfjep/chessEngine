@@ -139,15 +139,3 @@ class MoveGenerator:
             self.moves += Action.generate_actions(destination_squares & ~self.opponent_occupied, piece, piece_pos_int, ActionType.MOVE)
             self.moves += Action.generate_actions(destination_squares & self.opponent_occupied & ~self.opponent_king, piece, piece_pos_int, ActionType.ATTACK)
             self.moves += Action.generate_actions(destination_squares & self.opponent_occupied & self.opponent_king, piece, piece_pos_int, ActionType.ATTACK, is_check=True)
-
-
-"""
-
-Castles?
-    # Squares in between occupied?
-    # Squres in between attacked?
-    # In check?
-
-If BB_BLACK_ATTACKED & BB_WHITE_KING != 0:
-    Check pinned
-"""

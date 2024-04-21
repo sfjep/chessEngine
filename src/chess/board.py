@@ -175,11 +175,6 @@ class Board:
     def get_piece_name_from_board_dim(self, row: int, column: int) -> str:
         return self.board_arr[7-row][column]
 
-    # def get_piece_name_from_square(self, square: int):
-    #     row = square // 8
-    #     col = square % 8
-    #     return self.get_piece_name_from_board_dim(row, col)
-
     def square_has_piece(self, row: int, column: int):
         return self.board_arr[row][column] != " "
 
@@ -242,8 +237,8 @@ class Board:
             rook_destination_bb = get_bb_from_square_int(chess.F1) if action.piece.color else get_bb_from_square_int(chess.F8)
             rook_origin_square = get_bb_from_square_int(chess.H1) if action.piece.color else get_bb_from_square_int(chess.H8)
         rook_to_move = self.WR if action.piece.color else self.BR
-        assert rook_destination_bb & self.all_occupied == 0, f"Rook is trying to move to a square occupied by another piece."
-        assert rook_to_move.bb & rook_origin_square != 0, f"Rook is not in the expected origin square {get_square_name_from_bb(rook_origin_square)}"
+        assert rook_destination_bb & self.all_occupied == 0, f"Rook is trying to move to a square occupied by another piece. Origin: {get_square_name_from_bb(rook_origin_square)} Dest: {get_square_name_from_bb(rook_destination_bb)}"
+        assert rook_to_move.bb & rook_origin_square != 0, f"Rook is not in the expected origin square. Origin:{get_square_name_from_bb(rook_origin_square)} BB: {print_bitboard(rook_to_move.bb)}"
         rook_to_move.bb &= ~rook_origin_square
         rook_to_move.bb |= rook_destination_bb
 
