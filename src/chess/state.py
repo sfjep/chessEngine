@@ -1,10 +1,10 @@
-from copy import deepcopy
+from copy import copy, deepcopy
 import chess
 from chess.board import Board
 from dataclasses import dataclass
 from typing import List, Optional
 from chess.action import Action
-from chess.utils import convert_rank_and_file_to_square_int
+from chess.utils import convert_rank_and_file_to_square_int, print_bitboard
 from chess.fen_utils import FenUtils
 from chess.moves.moves import MoveGenerator
 from chess.fen import Fen
@@ -23,16 +23,18 @@ class State:
     in_check: List[bool]
     in_checkmate: List[bool]
     valid_moves: List[Action]
+    opponent_moves: List[Action]
 
     def __init__(self, fen=None) -> None:
         if fen:
             self.get_state_from_fen(fen)
         else:
             self.get_state_from_fen(chess.STARTING_BOARD_FEN)
+        self.opponent_moves = []
         self.is_in_check()
+        self.opponent_moves = self.get_possible_actions(not(self.turn))
         self.is_checkmate()
-
-        self.valid_moves = self.get_possible_actions()
+        self.valid_moves = self.get_possible_actions(self.turn)
 
     def get_state_from_fen(self, fen_str: str):
         fen = FenUtils(fen_str)
@@ -45,6 +47,7 @@ class State:
         self.en_passant_capture_square = fen.get_en_passant_capture_square()
         self.halfmove_count = fen.get_halfmove_count()
         self.move_count = fen.get_move_count()
+        self.king_bb = [self.board.BK.bb, self.board.WK.bb]
 
         self.occupied_co = (self.board.black_occupied, self.board.white_occupied)
 
@@ -56,19 +59,22 @@ class State:
             self.player_occupied = self.board.black_occupied
             self.opponent_occupied = self.board.white_occupied
 
-
     def is_in_check(self):
-        # TODO
-        self.in_check = (False, False)
-
-
+        if self.opponent_moves:
+            if any([move.is_check for move in self.opponent_moves]):
+                self.in_check[self.turn] = True
+            else:
+                self.in_check[self.turn] = False
+        else:
+            self.in_check = [False, False]
+            self.opponent_moves = self.get_possible_actions(not(self.turn))
+            self.is_in_check()
 
     def is_checkmate(self):
         # TODO
-        self.in_checkmate = (False, False)
+        self.in_checkmate = [False, False]
 
-
-    def get_possible_actions(self):
+    def get_possible_actions(self, color):
         """
         Generate list of actions possible in state
             Check which color is playing
@@ -76,7 +82,7 @@ class State:
             Take index of piece and get moves lookup
             Convert possible moves to list of Actions
         """
-        move_gen = MoveGenerator(self)
+        move_gen = MoveGenerator(self, color)
         self.moves = move_gen.get_piece_moves()
         return self.moves
 
@@ -86,29 +92,70 @@ class State:
         '''
         pass
 
-    def apply_action(self, action: Action):
+    def apply_action(self, action: Action, depth=0):
+        print(f"Applying action {action} with depth {depth}")
         new_state = self
         new_state.parent = deepcopy(self)
-        new_state.board.apply_action(action)
-        new_state.turn = not new_state.turn
-        new_state.halfmove_count += 1
-        new_state.move_count = new_state.halfmove_count // 2
-        new_state.en_passant_capture_square = chess.BB_EMPTY
 
-        if action.piece.type == chess.KING:
-            new_state.can_castle_kingside[action.piece.color] = False
-            new_state.can_castle_queenside[action.piece.color] = False
+        new_state.board.apply_action(action)
+
+        new_state.increment_move_counters()
+        new_state.en_passant_capture_square = chess.BB_EMPTY
+        new_state.update_castling_rights(action)
+
+        new_state.turn = not new_state.parent.turn
+
+        new_state.set_opponent_moves()
+        new_state.is_in_check()
 
         if action.is_two_step_pawn_move():
-            # Set en passant capture square
             new_state.en_passant_capture_square = action.get_en_passent_capture_square()
 
         new_state.fen = Fen.get_fen_from_state(new_state)
 
-        new_state.valid_moves = new_state.get_possible_actions()
+        if depth == 0:
+            new_state.valid_moves = new_state.get_possible_actions(new_state.turn)
 
-    def unapply_action(self):
-        self = self.parent
+            deep_copies = dict()
+            # remove moves that put me in check in the next state
+            for count, move in enumerate(new_state.valid_moves):
+                search_state = deepcopy(self)
+                deep_copies[count] = id(search_state.board)
+                if search_state.is_reveal_check_move(move):
+                    assert move in new_state.valid_moves
+                    new_state.valid_moves.remove(move)
+                    assert move not in new_state.valid_moves
+
+        return new_state
+
+
+    def is_reveal_check_move(self, action):
+        self.board.apply_action(action)
+        self.set_opponent_moves()
+        self.is_in_check()
+        return self.in_check[self.turn]
+
+    def set_opponent_moves(self):
+        self.opponent_moves = self.get_possible_actions(not self.turn)
+
+
+    def update_castling_rights(self, action):
+        if action.piece.type == chess.KING:
+            self.can_castle_kingside[action.piece.color] = False
+            self.can_castle_queenside[action.piece.color] = False
+
+        if action.piece.type == chess.ROOK:
+            if (action.origin_square == chess.A1 or action.origin_square == chess.A8):
+                self.can_castle_queenside[action.piece.color] = False
+            if (action.origin_square == chess.H1 or action.origin_square == chess.H8):
+                self.can_castle_kingside[action.piece.color] = False
+
+    def increment_move_counters(self):
+        self.halfmove_count += 1
+        self.move_count = self.halfmove_count // 2
+
+    def undo_action(self):
+        return self.parent
 
     def get_actions_from_origin_square(self, rank: int, file: int):
         square_int = convert_rank_and_file_to_square_int(rank, file)

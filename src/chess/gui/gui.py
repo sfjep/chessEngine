@@ -3,6 +3,7 @@ import chess
 import sys
 from chess.utils import convert_rank_and_file_to_square_int
 from chess.gui.dragger import Dragger
+from chess.gui.button import Button
 from chess.audio import Audio
 from chess.action import ActionType
 
@@ -29,6 +30,7 @@ class GUI:
 		p.display.set_caption('Chess')
 		self._load_images()
 		self.dragger = Dragger()
+		self.revert_button = Button("Undo Move", (50, 400), (200, 50))
 		self.dragging = False
 		self.original_position = None
 		self.audio = Audio()
@@ -59,6 +61,11 @@ class GUI:
 			for event in p.event.get():
 				if event.type == p.MOUSEBUTTONDOWN:
 					position = event.pos
+
+					if event.button == 1:
+						print(self.revert_button.is_clicked(position))
+						if self.revert_button.is_clicked(position):
+							state = state.undo_action()
 
 					if position[0] >= (self.FULL_WIDTH - self.WIDTH) and position[1] <= self.HEIGHT:
 						self.clicked_rank = self.gui_row_to_rank(position[1])
@@ -192,6 +199,7 @@ class GUI:
 		self.full_screen.blit(halfmove_count, (50, 150))
 		self.full_screen.blit(move_count, (50, 200))
 		self.full_screen.blit(is_check, (50, 250))
+		self.revert_button.draw(self.full_screen)
 
 		# If there are valid moves, render them
 		if self.valid_moves:
@@ -199,6 +207,11 @@ class GUI:
 			actions_string = ", ".join(str(move) for move in self.valid_moves)
 			actions_surface = font_text.render('Possible actions: ' + actions_string, True, p.Color('white'))
 			self.full_screen.blit(actions_surface, (50, 300))
+
+		if state.opponent_moves:
+			actions_string = ", ".join(str(move) for move in state.opponent_moves)
+			actions_surface = font_text.render('Opponent moves: ' + actions_string, True, p.Color('white'))
+			self.full_screen.blit(actions_surface, (50, 600))
 
         # Redraw the chess screen on the right side
 		self.full_screen.blit(self.chess_screen, (self.FULL_WIDTH - self.WIDTH, self.FULL_HEIGHT))
