@@ -184,23 +184,15 @@ class Board:
         return self.board_arr[row][column] != " "
 
     def apply_action(self, action: Action):
-        # remove piece from current square
         # board_piece = piece for piece in self.white_pieces if piece.type == action.piece.type
         board_piece = self.white_pieces[action.piece.type-1] if action.piece.color else self.black_pieces[action.piece.type-1]
         assert board_piece.type == action.piece.type
 
-        if board_piece.type == chess.ROOK:
-            print("board pre", id(self))
-            print("\nRook pre change")
-            print_bitboard(board_piece.bb)
-            print(action)
+        # remove piece from current square
         board_piece.bb &= ~get_bb_from_square_int(action.origin_square)
 
         # move piece to new square
         board_piece.bb |= get_bb_from_square_int(action.destination_square)
-        if board_piece.type == chess.ROOK:
-            print("\nRook post change")
-            print_bitboard(board_piece.bb)
 
         match action.type:
             case ActionType.ATTACK:

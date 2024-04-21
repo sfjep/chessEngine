@@ -122,8 +122,9 @@ class State:
                 search_state = deepcopy(self)
                 deep_copies[count] = id(search_state.board)
                 if search_state.is_reveal_check_move(move):
+                    assert move in new_state.valid_moves
                     new_state.valid_moves.remove(move)
-                print(deep_copies)
+                    assert move not in new_state.valid_moves
 
         return new_state
 
