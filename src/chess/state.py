@@ -26,8 +26,9 @@ class State:
     move_count: int
     in_check: List[bool]
     in_checkmate: List[bool]
-    valid_moves: List[Action]
+    possible_actions: List[Action]
     opponent_moves: List[Action]
+    children: List["State"]
 
     def __init__(self, fen=None) -> None:
         if fen:
@@ -38,7 +39,8 @@ class State:
         self.is_in_check()
         self.opponent_moves = self.get_possible_actions(not(self.turn))
         self.is_checkmate()
-        self.valid_moves = self.get_possible_actions(self.turn)
+        self.possible_actions = self.get_possible_actions(self.turn)
+        self.children = []
 
     def get_state_from_fen(self, fen_str: str):
         fen = FenUtils(fen_str)
@@ -78,9 +80,11 @@ class State:
         # TODO
         self.in_checkmate = [False, False]
 
-    def get_possible_actions(self, color):
+    def get_possible_actions(self, color=None):
+        if not color:
+            color = self.turn
         all_moves = self.get_all_actions(color)
-        return self.get_valid_moves(all_moves)
+        return self.get_legal_moves(all_moves)
 
     def get_all_actions(self, color):
         """
@@ -93,15 +97,15 @@ class State:
         move_gen = MoveGenerator(self, color)
         return move_gen.get_piece_moves()
 
-    def get_valid_moves(self, all_moves):
+    def get_legal_moves(self, all_moves):
         # deep_copies = dict()
-        valid_moves = []
+        possible_actions = []
         for count, move in enumerate(all_moves):
             search_state = deepcopy(self)
             # deep_copies[count] = id(search_state)
             if not search_state.is_suicide(move):
-                valid_moves.append(move)
-        return valid_moves
+                possible_actions.append(move)
+        return possible_actions
 
 
     def choose_action(self):
@@ -147,7 +151,7 @@ class State:
         logging.debug(f"Getting fen took {time.time() - intermediate_time:.5f} seconds.")
         intermediate_time = time.time()
 
-        new_state.valid_moves = new_state.get_possible_actions(new_state.turn)
+        new_state.possible_actions = new_state.get_possible_actions(new_state.turn)
 
 
         logging.debug(f"Getting valid moves {time.time() - intermediate_time:.5f} seconds.")
@@ -185,4 +189,4 @@ class State:
 
     def get_actions_from_origin_square(self, rank: int, file: int):
         square_int = convert_rank_and_file_to_square_int(rank, file)
-        return Action.get_actions_from_origin_square(self.valid_moves, square_int)
+        return Action.get_actions_from_origin_square(self.possible_actions, square_int)

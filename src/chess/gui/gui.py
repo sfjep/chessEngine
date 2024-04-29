@@ -45,18 +45,18 @@ class GUI:
 	def run(self, state):
 		clock = p.time.Clock()
 		self.dragging = False
-		self.valid_moves_drawn = False
-		self.valid_moves = []
+		self.possible_actions_drawn = False
+		self.possible_actions = []
 
 		while True:
 			clock.tick(self.MAX_FPS)
-			self.destination_action_dict = {action.destination_square : action for action in self.valid_moves}
+			self.destination_action_dict = {action.destination_square : action for action in self.possible_actions}
 			self.show_background()
 			self._draw_pieces(state.board)
 
 			if self.dragging:
-				if not self.valid_moves_drawn:
-					self.valid_moves_drawn = True  # Set the flag to True after drawing them once
+				if not self.possible_actions_drawn:
+					self.possible_actions_drawn = True  # Set the flag to True after drawing them once
 
 			for event in p.event.get():
 				if event.type == p.MOUSEBUTTONDOWN:
@@ -75,7 +75,7 @@ class GUI:
 							print("Clicked on a piece")
 							self.dragging = True
 							self.original_position = (7-self.clicked_rank, self.clicked_file)
-							self.valid_moves = state.get_actions_from_origin_square(self.clicked_rank, self.clicked_file)
+							self.possible_actions = state.get_actions_from_origin_square(self.clicked_rank, self.clicked_file)
 
 							print("Clicked rank: ", self.clicked_rank)
 							print("Clicked file: ", self.clicked_file)
@@ -110,8 +110,8 @@ class GUI:
 
 						# If the move is invalid, you can set new_position to original_position to revert the piece
 						self.dragging = False
-						self.valid_moves_drawn = False  # Reset the flag when the piece is dropped
-						self.valid_moves = []  # Clear the valid moves
+						self.possible_actions_drawn = False  # Reset the flag when the piece is dropped
+						self.possible_actions = []  # Clear the valid moves
 
 					self.dragger.clear()  # clear the piece from the dragger
 
@@ -202,9 +202,9 @@ class GUI:
 		self.revert_button.draw(self.full_screen)
 
 		# If there are valid moves, render them
-		if self.valid_moves:
+		if self.possible_actions:
 			# Construct the string for valid moves
-			actions_string = ", ".join(str(move) for move in self.valid_moves)
+			actions_string = ", ".join(str(move) for move in self.possible_actions)
 			actions_surface = font_text.render('Possible actions: ' + actions_string, True, p.Color('white'))
 			self.full_screen.blit(actions_surface, (50, 300))
 

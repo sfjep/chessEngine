@@ -114,10 +114,5 @@ BB_QUEENSIDE_CASTLE_SQUARES = (BB_D8 | BB_C8 | BB_G1, BB_D1 | BB_C1 | BB_B1)
 QUEENSIDE_CASTLE_SQUARE = (BB_C8, BB_C1)
 KINGSIDE_CASTLE_SQUARE = (BB_G8, BB_G1)
 
-# NOTATION
-# STARTING_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-# """The FEN for the standard chess starting position."""
-
-STARTING_BOARD_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
-"""The board part of the FEN for the standard chess starting position."""
+STARTING_BOARD_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
