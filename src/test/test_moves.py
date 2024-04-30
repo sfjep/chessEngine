@@ -76,7 +76,7 @@ class MovesTest(unittest.TestCase):
     def test_number_of_possible_actions_from_start(self):
         state = State()
 
-        result = search(state, 2)
+        result = search(state, 1)
 
         self.assertEqual(result[0], 20)
         self.assertEqual(result[1], 400)

@@ -44,7 +44,7 @@ class State:
 
     def get_state_from_fen(self, fen_str: str):
         fen = FenUtils(fen_str)
-        self.parent = self
+        self.parent = None
         self.fen = fen_str
         self.board = fen.get_board(Board)
         self.turn = fen.get_player()
