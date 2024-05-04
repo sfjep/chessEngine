@@ -1,5 +1,5 @@
 import unittest
-from chess.search import search
+from perft import search
 import src.chess as chess
 from src.chess.state import State
 from src.chess.action import Action, ActionType

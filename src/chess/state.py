@@ -11,7 +11,7 @@ from chess.fen import Fen
 import logging
 import time
 
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+#logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 @dataclass
 class State:
@@ -156,8 +156,6 @@ class State:
 
         logging.debug(f"Getting valid moves {time.time() - intermediate_time:.5f} seconds.")
         intermediate_time = time.time()
-
-        return new_state
 
 
     def is_suicide(self, action):
