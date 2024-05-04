@@ -1,5 +1,5 @@
 from chess.state import State
-from chess.search import perfTest
+from perft import perfTest
 import pygame as p
 from chess.gui.gui import GUI
 from chess.state import State

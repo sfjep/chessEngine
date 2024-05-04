@@ -53,7 +53,7 @@ class Action:
         promotion_to = f"/{chess.PIECE_SYMBOLS[self.promotion_to].upper()}" if self.type == ActionType.PROMOTION else ""
         check = "+" if self.is_check and not self.is_checkmate else ""
         checkmate = "#" if self.is_checkmate else ""
-        return f"{piece}{start}{captures}{end}{promotion_to}{check}{checkmate}"
+        return f"{start}{captures}{end}{promotion_to}{check}{checkmate}"
 
     def is_two_step_pawn_move(self):
         return self.piece.type == chess.PAWN and (abs(self.destination_square - self.origin_square) == 16)
