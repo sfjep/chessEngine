@@ -79,11 +79,11 @@ class State:
         return move_gen.get_piece_moves()
 
     def filter_suicides(self, all_moves):
-        # deep_copies = dict()
         legal_moves = []
-        for count, move in enumerate(all_moves):
+        for move in all_moves:
+            if str(move) == "e8d7":
+                pass
             search_state = deepcopy(self)
-            # deep_copies[count] = id(search_state)
             if not search_state.is_suicide(move):
                 legal_moves.append(move)
         return legal_moves
@@ -117,6 +117,7 @@ class State:
         intermediate_time = time.time()
 
         self.fen = Fen.get_fen_from_state(self)
+        self.opponent_moves = []
 
         logging.debug(f"Getting fen took {time.time() - intermediate_time:.5f} seconds.")
         intermediate_time = time.time()
@@ -146,4 +147,4 @@ class State:
 
     def get_actions_from_origin_square(self, rank: int, file: int):
         square_int = convert_rank_and_file_to_square_int(rank, file)
-        return Action.get_actions_from_origin_square(self.possible_actions, square_int)
+        return Action.get_actions_from_origin_square(self.get_legal_moves(), square_int)

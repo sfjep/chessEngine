@@ -5,8 +5,7 @@ from chess.gui.gui import GUI
 from chess.state import State
 
 def main():
-    state = State()
-    perfTest(3, state)
+    state = State("rnbqkbnr/ppp1pppp/3p4/8/8/6PB/PPPPPP1P/RNBQK1NR b KQkq - 0 1")
 
     # start_game("rQbqk2r/pp1ppppp/8/2pPB2P/1P1pP3/8/PPP3PP/R1n1K1NR w KQkq c6 3 6")
     # state = State("3k4/8/3p4/8/1p3P2/3B4/3P4/4K3 w - - 0 1")
@@ -16,8 +15,8 @@ def main():
     # print("Moves")
     # for move in state.possible_actions: print(move)
 
-    # gui = GUI()
-    # gui.run(state)
+    gui = GUI()
+    gui.run(state)
 
     # print(Fen.get_fen_from_state(state))
     # print(attack_actions)

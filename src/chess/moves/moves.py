@@ -13,6 +13,7 @@ class MoveGenerator:
         self.player_occupied = self.player_board['PLAYER_OCCUPIED']
         self.opponent_occupied = self.player_board['OPPONENT_OCCUPIED']
         self.opponent_king = state.board.pieces[not(color)]["KING"].bb
+        self.player_king = state.board.pieces[color]["KING"].bb
         self.moves = []
 
     def get_piece_moves(self):
@@ -27,6 +28,8 @@ class MoveGenerator:
     def _get_pawn_moves(self):
         pawns = self.player_board["PAWN"]
 
+        inCheck = pawn_diag_moves(self.state.board.pieces[not(self.color)]["PAWN"].bb, not(self.color)) & self.player_king
+
         for current_piece_position in get_individual_ones_in_bb(pawns.bb):
             current_piece_index = get_square_int_from_bb(current_piece_position)
             attack_squares = pawn_diag_moves(current_piece_position, self.color) & (self.opponent_occupied)
@@ -37,6 +40,7 @@ class MoveGenerator:
                 if current_piece_position & pawn_starting_rank(self.color):
                     if move_2_up := pawn_two_step(current_piece_position, self.color) & ~(self.opponent_occupied | self.player_occupied):
                         destination_squares |= move_2_up
+
 
             promotion_rank = chess.BB_PROMOTION_RANK[self.color]
             self.moves += Action.generate_actions(destination_squares & ~attack_squares & ~promotion_rank, pawns, current_piece_index, ActionType.MOVE)

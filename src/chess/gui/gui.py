@@ -193,7 +193,7 @@ class GUI:
 		halfmove_count = font_text.render('Halfmove count: ' + str(state.halfmove_count), True, p.Color('white'))
 		move_count = font_text.render('Move count: ' + str(state.move_count), True, p.Color('white'))
 		is_check = font_text.render(f'In check: ' + str(state.in_check[state.turn]), True, p.Color('white'))
-		numberOfPlayerMoves = font_text.render(f'#: {len(state.possible_actions)}', True, p.Color('white'))
+		numberOfPlayerMoves = font_text.render(f'#: {len(state.get_legal_moves())}', True, p.Color('white'))
 
 		self.full_screen.blit(header, (50, 50))
 		self.full_screen.blit(fen_str, (50, 100))
