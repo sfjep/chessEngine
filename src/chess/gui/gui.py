@@ -193,12 +193,14 @@ class GUI:
 		halfmove_count = font_text.render('Halfmove count: ' + str(state.halfmove_count), True, p.Color('white'))
 		move_count = font_text.render('Move count: ' + str(state.move_count), True, p.Color('white'))
 		is_check = font_text.render(f'In check: ' + str(state.in_check[state.turn]), True, p.Color('white'))
+		numberOfPlayerMoves = font_text.render(f'#: {len(state.possible_actions)}', True, p.Color('white'))
 
 		self.full_screen.blit(header, (50, 50))
 		self.full_screen.blit(fen_str, (50, 100))
 		self.full_screen.blit(halfmove_count, (50, 150))
 		self.full_screen.blit(move_count, (50, 200))
 		self.full_screen.blit(is_check, (50, 250))
+		self.full_screen.blit(numberOfPlayerMoves, (50, 300))
 		self.revert_button.draw(self.full_screen)
 
 		# If there are valid moves, render them
@@ -206,7 +208,7 @@ class GUI:
 			# Construct the string for valid moves
 			actions_string = ", ".join(str(move) for move in self.possible_actions)
 			actions_surface = font_text.render('Possible actions: ' + actions_string, True, p.Color('white'))
-			self.full_screen.blit(actions_surface, (50, 300))
+			self.full_screen.blit(actions_surface, (50, 350))
 
 		if state.opponent_moves:
 			actions_string = ", ".join(str(move) for move in state.opponent_moves)
