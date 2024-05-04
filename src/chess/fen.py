@@ -17,23 +17,7 @@ class Fen:
 
     @staticmethod
     def _get_board_fen(state):
-        board_arr = state.board.board_arr
-        fen = ''
-        for i in range(board_arr.shape[0]):
-            empty_count = 0
-            for j in range(board_arr.shape[1]):
-                if board_arr[i, j] == ' ':
-                    empty_count += 1
-                else:
-                    if empty_count != 0:
-                        fen += str(empty_count)
-                        empty_count = 0
-                    fen += chess.PIECE_STRING_TO_CHAR[board_arr[i, j]]
-            if empty_count != 0:
-                fen += str(empty_count)
-            if i != (board_arr.shape[0] - 1):
-                fen += "/"
-        return fen
+        return state.board.fen
 
 
     @staticmethod

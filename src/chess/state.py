@@ -24,11 +24,7 @@ class State:
     en_passant_capture_square: chess.Bitboard  # Destination square of attacking piece
     halfmove_count: int
     move_count: int
-    in_check: List[bool]
-    in_checkmate: List[bool]
-    possible_actions: List[Action]
     opponent_moves: List[Action]
-    children: List["State"]
 
     def __init__(self, fen=None) -> None:
         if fen:
@@ -37,10 +33,6 @@ class State:
             self.get_state_from_fen(chess.STARTING_BOARD_FEN)
         self.opponent_moves = []
         self.is_in_check()
-        self.opponent_moves = self.get_possible_actions(not(self.turn))
-        self.is_checkmate()
-        self.possible_actions = self.get_possible_actions(self.turn)
-        self.children = []
 
     def get_state_from_fen(self, fen_str: str):
         fen = FenUtils(fen_str)
@@ -53,17 +45,6 @@ class State:
         self.en_passant_capture_square = fen.get_en_passant_capture_square()
         self.halfmove_count = fen.get_halfmove_count()
         self.move_count = fen.get_move_count()
-        # self.king_bb = [self.board.BK.bb, self.board.WK.bb]
-
-        self.occupied_co = (self.board.black_occupied, self.board.white_occupied)
-
-        # set player_occupied
-        if self.turn == chess.WHITE:
-            self.player_occupied = self.board.white_occupied
-            self.opponent_occupied = self.board.black_occupied
-        else:
-            self.player_occupied = self.board.black_occupied
-            self.opponent_occupied = self.board.white_occupied
 
     def is_in_check(self):
         if self.opponent_moves:
@@ -73,20 +54,20 @@ class State:
                 self.in_check[self.turn] = False
         else:
             self.in_check = [False, False]
-            self.opponent_moves = self.get_all_actions(not(self.turn))
+            self.opponent_moves = self.get_all_moves(not(self.turn))
             self.is_in_check()
 
     def is_checkmate(self):
         # TODO
         self.in_checkmate = [False, False]
 
-    def get_possible_actions(self, color=None):
+    def get_legal_moves(self, color=None):
         if not color:
             color = self.turn
-        all_moves = self.get_all_actions(color)
-        return self.get_legal_moves(all_moves)
+        all_moves = self.get_all_moves(color)
+        return self.filter_suicides(all_moves)
 
-    def get_all_actions(self, color):
+    def get_all_moves(self, color):
         """
         Generate list of actions possible in state
             Check which color is playing
@@ -97,15 +78,15 @@ class State:
         move_gen = MoveGenerator(self, color)
         return move_gen.get_piece_moves()
 
-    def get_legal_moves(self, all_moves):
+    def filter_suicides(self, all_moves):
         # deep_copies = dict()
-        possible_actions = []
+        legal_moves = []
         for count, move in enumerate(all_moves):
             search_state = deepcopy(self)
             # deep_copies[count] = id(search_state)
             if not search_state.is_suicide(move):
-                possible_actions.append(move)
-        return possible_actions
+                legal_moves.append(move)
+        return legal_moves
 
 
     def choose_action(self):
@@ -116,56 +97,34 @@ class State:
         start_time = time.time()
         logging.debug("Starting action application.")
 
-        new_state = self
-        new_state.parent = deepcopy(self)
+        self.parent = deepcopy(self)
 
         logging.debug(f"Deepcopy of state took {time.time() - start_time:.5f} seconds.")
         intermediate_time = time.time()
 
-        new_state.board.apply_action(action)
+        self.board.apply_action(action)
         logging.debug(f"Applying action on board took {time.time() - intermediate_time:.5f} seconds.")
         intermediate_time = time.time()
 
-        new_state.increment_move_counters()
-        new_state.en_passant_capture_square = chess.BB_EMPTY
+        self.increment_move_counters()
+        self.en_passant_capture_square = chess.BB_EMPTY
         if action.is_two_step_pawn_move():
-            new_state.en_passant_capture_square = action.get_en_passent_capture_square()
-        new_state.update_castling_rights(action)
-        new_state.turn = not new_state.parent.turn
+            self.en_passant_capture_square = action.get_en_passent_capture_square()
+        self.update_castling_rights(action)
+        self.turn = not self.parent.turn
 
         logging.debug(f"Updating state variables took {time.time() - intermediate_time:.5f} seconds.")
         intermediate_time = time.time()
 
-        new_state.set_opponent_moves()
-
-        logging.debug(f"Setting opponent moves took {time.time() - intermediate_time:.5f} seconds.")
-        intermediate_time = time.time()
-
-        new_state.is_in_check()
-
-        logging.debug(f"Checking if in check took {time.time() - intermediate_time:.5f} seconds.")
-        intermediate_time = time.time()
-
-        new_state.fen = Fen.get_fen_from_state(new_state)
+        self.fen = Fen.get_fen_from_state(self)
 
         logging.debug(f"Getting fen took {time.time() - intermediate_time:.5f} seconds.")
-        intermediate_time = time.time()
-
-        new_state.possible_actions = new_state.get_possible_actions(new_state.turn)
-
-
-        logging.debug(f"Getting valid moves {time.time() - intermediate_time:.5f} seconds.")
         intermediate_time = time.time()
 
 
     def is_suicide(self, action):
         self.board.apply_action(action)
-        self.opponent_moves = self.get_all_actions(not self.turn)
-        self.is_in_check()
-        return self.in_check[self.turn]
-
-    def set_opponent_moves(self):
-        self.opponent_moves = self.get_possible_actions(not self.turn)
+        return self.is_in_check()
 
     def update_castling_rights(self, action):
         if action.piece.type == chess.KING:

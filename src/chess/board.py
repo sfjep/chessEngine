@@ -172,6 +172,26 @@ class Board:
                     self.board_arr[idx // 8, idx % 8] = f"B{chess.PIECE_SYMBOLS[piece.type].upper()}"
         self.board_arr = np.flip(self.board_arr, axis=0)
 
+    def _set_board_fen(self):
+        board_arr = self.board_arr
+        fen = ''
+        for i in range(board_arr.shape[0]):
+            empty_count = 0
+            for j in range(board_arr.shape[1]):
+                if board_arr[i, j] == ' ':
+                    empty_count += 1
+                else:
+                    if empty_count != 0:
+                        fen += str(empty_count)
+                        empty_count = 0
+                    fen += chess.PIECE_STRING_TO_CHAR[board_arr[i, j]]
+            if empty_count != 0:
+                fen += str(empty_count)
+            if i != (board_arr.shape[0] - 1):
+                fen += "/"
+        self.fen = fen
+
+
     def get_piece_name_from_board_dim(self, row: int, column: int) -> str:
         return self.board_arr[7-row][column]
 
@@ -183,6 +203,7 @@ class Board:
         board_piece = self.white_pieces[action.piece.type-1] if action.piece.color else self.black_pieces[action.piece.type-1]
         assert board_piece.type == action.piece.type
 
+        # apply base move in all cases
         # remove piece from current square
         board_piece.bb &= ~get_bb_from_square_int(action.origin_square)
 
@@ -190,6 +211,7 @@ class Board:
         board_piece.bb |= get_bb_from_square_int(action.destination_square)
 
         match action.type:
+        # if action is ATTACK, remove eaten piece
             case ActionType.ATTACK:
                self.apply_attack_action(action)
 
@@ -208,6 +230,7 @@ class Board:
         # update helper bitboards and chararray
         self._set_helper_bitboards()
         self._set_board_chararray()
+        self._set_board_fen()
 
 
     def apply_attack_action(self, action):

@@ -36,13 +36,14 @@ import sys
 
 def perft(depth: int, state: State):
     if depth == 1:
-        return len(state.possible_actions)
+        return len(state.get_legal_moves())
     elif depth > 1:
         count = 0
 
-        for action in state.possible_actions:
+        moves = state.get_legal_moves()
+        for action in moves:
             state.apply_action(action)
-            parent = state.undo_action()
+            parent = state.parent
             count += perft(depth - 1, state)
             state = parent
 
@@ -53,29 +54,45 @@ def perft(depth: int, state: State):
 
 def perfTest(depth: int, state: State):
     total_leaf_nodes = 0
-    lines = ""
-    for action in state.possible_actions:
+
+    moves = state.get_legal_moves()
+    for action in moves:
+        # if str(action) == "h2h3":
+        #     pass
+        
         leaf_nodes = 0
         state.apply_action(action)
+        parent = state.parent
 
         leaf_nodes = perft(depth-1, state)
         total_leaf_nodes += leaf_nodes
 
-        # print(f"{action} {leaf_nodes}")
-        lines += f"{action} {leaf_nodes}\n"
+        print(f"{action} {leaf_nodes}")
 
-        state = state.undo_action()
+        state = parent
 
-    lines += "\n"
-    lines += str(total_leaf_nodes)
-    # print(f"\n{total_leaf_nodes}")
-    # print(lines, end="")
-    return lines
-    # print(f"Test complete. Total number of leaves: {total_leaf_nodes}")
+    print(f"\n{total_leaf_nodes}")
 
-depth = int(sys.argv[1])
-fen = sys.argv[2]
+# if __name__ == "__main__":
+#     depth = int(sys.argv[1])
+#     fen = sys.argv[2]
+#     moves = sys.argv[3].split() if len(sys.argv) > 3 else []
 
-state = State(fen)
+#     state = State(fen)
 
-perfTest(depth, state)
+#     perfTest(depth, state)
+
+# state = State()
+
+# perfTest(3, state)
+
+# file1 = open('/Users/victorianunezr/repos/chessEngine/src/output.txt', 'r')
+# Lines = file1.readlines()
+ 
+# count = 0
+# # Strips the newline character
+# for line in Lines[0:len(Lines)-1]:
+#     count += 1
+#     print(line.strip())
+
+# print(Lines[len(Lines)-1], end="")
