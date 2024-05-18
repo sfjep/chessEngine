@@ -34,6 +34,7 @@ class State:
             self.get_state_from_fen(chess.STARTING_BOARD_FEN)
         
         self.in_check = False
+        self.legal_moves = []
 
 
     def get_state_from_fen(self, fen_str: str):
@@ -57,11 +58,15 @@ class State:
             Take index of piece and get moves lookup
             Convert possible moves to list of Actions
         """
-        move_generator = MoveGenerator(self, self.turn)
-        self.in_check = move_generator.in_check
+        if not self.legal_moves:
+            move_generator = MoveGenerator(self, self.turn)
+            self.in_check = move_generator.in_check
+            self.legal_moves = move_generator.get_piece_moves()
+            # pseudo-legal moves already filtered out in move generation
+            return self.legal_moves
+        
+        return self.legal_moves
 
-        # pseudo-legal moves already filtered out in move generation
-        return move_generator.get_piece_moves()
 
 
     def choose_action(self):
@@ -92,6 +97,7 @@ class State:
         intermediate_time = time.time()
 
         self.fen = Fen.get_fen_from_state(self)
+        self.legal_moves = []
 
         logging.debug(f"Getting fen took {time.time() - intermediate_time:.5f} seconds.")
         intermediate_time = time.time()

@@ -1,4 +1,3 @@
-import string
 import chess
 from chess import utils
 from chess.action import Action, ActionType
@@ -128,23 +127,22 @@ class MoveGenerator:
     def _get_king_moves(self):
         king = self.player_board["KING"]
 
-        for current_piece_position_bb in get_individual_ones_in_bb(king.bb):
-            square_int = get_square_int_from_bb(current_piece_position_bb)
-            destination_squares = king.moves_lookup[(square_int, self.color)] & ~self.player_occupied & ~self.opponent_occupied
-            kingside_castles_bb, queenside_castles_bb = self._add_castling()
+        square_int = get_square_int_from_bb(king.bb)
+        destination_squares = king.moves_lookup[(square_int, self.color)] & ~self.player_occupied & ~self.opponent_occupied
+        kingside_castles_bb, queenside_castles_bb = self._add_castling()
 
-            king_attack_squares = king.moves_lookup[(square_int, self.color)] & ~self.player_occupied & self.opponent_occupied
+        king_attack_squares = king.moves_lookup[(square_int, self.color)] & ~self.player_occupied & self.opponent_occupied
 
-            # do not let friendly king move to a square attacked by opponent
-            destination_squares &= ~self.attacked_squares
-            king_attack_squares &= ~self.attacked_squares
+        # do not let friendly king move to a square attacked by opponent
+        destination_squares &= ~self.attacked_squares
+        king_attack_squares &= ~self.attacked_squares
 
-            self.moves += Action.generate_actions(destination_squares, king, square_int, ActionType.MOVE)
-            self.moves += Action.generate_actions(king_attack_squares, king, square_int, ActionType.ATTACK)
+        self.moves += Action.generate_actions(destination_squares, king, square_int, ActionType.MOVE)
+        self.moves += Action.generate_actions(king_attack_squares, king, square_int, ActionType.ATTACK)
 
-            if not(self.in_check):
-                self.moves += Action.generate_actions(queenside_castles_bb, king, square_int, ActionType.CASTLING, is_long_castles=True)
-                self.moves += Action.generate_actions(kingside_castles_bb, king, square_int, ActionType.CASTLING, is_long_castles=False)
+        if not(self.in_check):
+            self.moves += Action.generate_actions(queenside_castles_bb, king, square_int, ActionType.CASTLING, is_long_castles=True)
+            self.moves += Action.generate_actions(kingside_castles_bb, king, square_int, ActionType.CASTLING, is_long_castles=False)
 
 
     def _add_castling(self):
@@ -165,11 +163,11 @@ class MoveGenerator:
     def _kingside_castling_squares_empty(self):
         return (chess.BB_KINGSIDE_CASTLE_SQUARES[self.color] & (self.opponent_occupied | self.player_occupied)) == chess.BB_EMPTY
 
-    def _get_range_moves(self, piece, directions: list, opponent_attacks=False):
+    def _get_range_moves(self, piece, directions: list, compute_slide_attacks=False):
         # if opponent_attacks is True, we are calculating attack squares by opponent sliding pieces, so we swap opponent and player pieces
         # Else we are computing friendly pieces moves
-        moving_pieces = self.player_occupied if not opponent_attacks else self.opponent_occupied
-        opponent_pieces = self.opponent_occupied if not opponent_attacks else self.player_occupied
+        moving_pieces = self.player_occupied if not compute_slide_attacks else self.opponent_occupied
+        opponent_pieces = self.opponent_occupied if not compute_slide_attacks else self.player_occupied
 
 
         for piece_bb in get_individual_ones_in_bb(piece.bb):
@@ -179,7 +177,7 @@ class MoveGenerator:
 
             for direction, mask_upwards in directions:
 
-                if not opponent_attacks:
+                if not compute_slide_attacks:
                     destination_squares &= ~mask_own_pieces(piece_square, direction, moving_pieces, mask_upwards)
                     destination_squares &= ~mask_opponent_pieces(piece_square, direction, opponent_pieces, mask_upwards)
                 
@@ -191,13 +189,13 @@ class MoveGenerator:
                     destination_squares &= ~mask_opponent_pieces(piece_square, direction, moving_pieces, mask_upwards)
                     destination_squares &= ~mask_opponent_pieces(piece_square, direction, opponent_pieces, mask_upwards)
 
-            if not opponent_attacks and self.is_pinned(piece_bb):
+            if not compute_slide_attacks and self.is_pinned(piece_bb):
                 # only allow piece to move along pin ray
                 pin_ray = self.pin_ray_map[piece_bb]
                 destination_squares &= pin_ray
 
             # only append to move list if we are computing moves for friendly pieces
-            if not opponent_attacks:
+            if not compute_slide_attacks:
                 self.moves += Action.generate_actions(destination_squares & ~self.opponent_occupied, piece, piece_square, ActionType.MOVE)
                 self.moves += Action.generate_actions(destination_squares & self.opponent_occupied & ~self.opponent_king, piece, piece_square, ActionType.ATTACK)
                 self.moves += Action.generate_actions(destination_squares & self.opponent_occupied & self.opponent_king, piece, piece_square, ActionType.ATTACK, is_check=True)
@@ -213,21 +211,21 @@ class MoveGenerator:
             (["UP_RIGHT", "UP_LEFT"], True),
             (["DOWN_RIGHT", "DOWN_LEFT"], False)
         ]
-        self._get_range_moves(opponent_bishops, directions, opponent_attacks=True)
+        self._get_range_moves(opponent_bishops, directions, compute_slide_attacks=True)
 
-        opponent_queen = self.player_board["QUEEN"]
+        opponent_queen = self.opponent_board["QUEEN"]
         directions = [
             (["UP_RIGHT", "RIGHT", "UP", "UP_LEFT"], True),
             (["DOWN_RIGHT", "DOWN", "LEFT", "DOWN_LEFT"], False)
         ]
-        self._get_range_moves(opponent_queen, directions, opponent_attacks=True)
+        self._get_range_moves(opponent_queen, directions, compute_slide_attacks=True)
 
-        opponent_rooks = self.player_board["ROOK"]
+        opponent_rooks = self.opponent_board["ROOK"]
         move_ranges = [
             (["UP", "RIGHT"], True),
             (["LEFT", "DOWN"], False)
         ]
-        self._get_range_moves(opponent_rooks, move_ranges, opponent_attacks=True)
+        self._get_range_moves(opponent_rooks, move_ranges, compute_slide_attacks=True)
 
 
     def is_diagonal(self, direction: str):
