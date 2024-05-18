@@ -32,9 +32,9 @@ class State:
             self.get_state_from_fen(fen)
         else:
             self.get_state_from_fen(chess.STARTING_BOARD_FEN)
+        
+        self.in_check = False
 
-        self.move_generator = MoveGenerator(self, self.turn)
-        self.in_check = self.move_generator.in_check
 
     def get_state_from_fen(self, fen_str: str):
         fen = FenUtils(fen_str)
@@ -57,8 +57,11 @@ class State:
             Take index of piece and get moves lookup
             Convert possible moves to list of Actions
         """
+        move_generator = MoveGenerator(self, self.turn)
+        self.in_check = move_generator.in_check
+
         # pseudo-legal moves already filtered out in move generation
-        return self.move_generator.get_piece_moves()
+        return move_generator.get_piece_moves()
 
 
     def choose_action(self):

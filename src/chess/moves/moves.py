@@ -6,19 +6,7 @@ from chess.masking import mask_own_pieces, mask_opponent_pieces
 from chess.moves.move_utils import pawn_diag_moves, pawn_starting_rank, pawn_one_step, pawn_two_step, SQUARE_XRAYS, MOVE_FUNCTION
 from chess.utils import get_individual_ones_in_bb, get_square_int_from_bb
 
-# @dataclass
 class MoveGenerator:
-    # player_board: dict
-    # player_occupied: chess.Bitboard
-    # opponent_occupied: chess.Bitboard
-    # player_king: chess.Bitboard
-    # opponent_king: chess.Bitboard
-    # moves: list
-
-    # in_check: bool
-    # in_double_check: bool
-    # pin_squares: chess.Bitboard
-    # attacked_squares: chess.Bitboard
 
     def __init__(self, state, color):
         self.state = state
@@ -36,6 +24,9 @@ class MoveGenerator:
         self.in_double_check = False
         self.pin_squares = chess.BB_EMPTY
         self.attacked_squares = chess.BB_EMPTY
+
+        # dict mapping a single pinned piece's bb to the bb of the ray along which it is allowed to move
+        self.pin_ray_map = {}
 
         self.compute_attack_map()
 
@@ -59,8 +50,6 @@ class MoveGenerator:
         pawns = self.player_board["PAWN"]
 
         for single_pawn_bb in get_individual_ones_in_bb(pawns.bb):
-            if self.is_pinned(single_pawn_bb):
-                continue
 
             current_piece_index = get_square_int_from_bb(single_pawn_bb)
             attack_squares = pawn_diag_moves(single_pawn_bb, self.color) & (self.opponent_occupied)
@@ -71,6 +60,12 @@ class MoveGenerator:
                 if single_pawn_bb & pawn_starting_rank(self.color):
                     if move_2_up := pawn_two_step(single_pawn_bb, self.color) & ~(self.opponent_occupied | self.player_occupied):
                         destination_squares |= move_2_up
+
+            if self.is_pinned(single_pawn_bb):
+                pin_ray = self.pin_ray_map[single_pawn_bb]
+                destination_squares &= pin_ray
+                attack_squares &= pin_ray
+                en_passant_dest_squares &= pin_ray
 
             promotion_rank = chess.BB_PROMOTION_RANK[self.color]
             self.moves += Action.generate_actions(destination_squares & ~attack_squares & ~promotion_rank, pawns, current_piece_index, ActionType.MOVE)
@@ -100,16 +95,19 @@ class MoveGenerator:
         knights = self.player_board["KNIGHT"]
 
         for piece_bb in get_individual_ones_in_bb(knights.bb):
-            if self.is_pinned(piece_bb):
-                continue
 
             square_int = get_square_int_from_bb(piece_bb)
             destination_squares = knights.moves_lookup[square_int] & ~self.player_occupied & ~self.opponent_occupied
-            attack_moves = knights.moves_lookup[square_int] & ~self.player_occupied & self.opponent_occupied
+            attack_squares = knights.moves_lookup[square_int] & ~self.player_occupied & self.opponent_occupied
+            
+            if self.is_pinned(piece_bb):
+                pin_ray = self.pin_ray_map[piece_bb]
+                destination_squares &= pin_ray
+                attack_squares &= pin_ray
 
             self.moves += Action.generate_actions(destination_squares, knights, square_int, ActionType.MOVE)
-            self.moves += Action.generate_actions(attack_moves & ~self.opponent_king, knights, square_int, ActionType.ATTACK)
-            self.moves += Action.generate_actions(attack_moves & self.opponent_king, knights, square_int, ActionType.ATTACK, is_check=True)
+            self.moves += Action.generate_actions(attack_squares & ~self.opponent_king, knights, square_int, ActionType.ATTACK)
+            self.moves += Action.generate_actions(attack_squares & self.opponent_king, knights, square_int, ActionType.ATTACK, is_check=True)
 
     def _get_bishop_moves(self):
         bishops = self.player_board["BISHOP"]
@@ -173,9 +171,8 @@ class MoveGenerator:
         moving_pieces = self.player_occupied if not opponent_attacks else self.opponent_occupied
         opponent_pieces = self.opponent_occupied if not opponent_attacks else self.player_occupied
 
+
         for piece_bb in get_individual_ones_in_bb(piece.bb):
-            if not opponent_attacks and self.is_pinned(piece_bb):
-                continue
 
             piece_square = get_square_int_from_bb(piece_bb)
             destination_squares = piece.moves_lookup[piece_square]
@@ -194,6 +191,10 @@ class MoveGenerator:
                     destination_squares &= ~mask_opponent_pieces(piece_square, direction, moving_pieces, mask_upwards)
                     destination_squares &= ~mask_opponent_pieces(piece_square, direction, opponent_pieces, mask_upwards)
 
+            if not opponent_attacks and self.is_pinned(piece_bb):
+                # only allow piece to move along pin ray
+                pin_ray = self.pin_ray_map[piece_bb]
+                destination_squares &= pin_ray
 
             # only append to move list if we are computing moves for friendly pieces
             if not opponent_attacks:
@@ -258,12 +259,19 @@ class MoveGenerator:
 
                 friendly_piece_count = 0
                 opponent_piece_count = 0
+                possible_pin_square = 0
+                pin_ray = 0
                 
                 square_bb = king.bb
                 while (square_bb := move(square_bb)) != 0 :
+                    pin_ray |= square_bb
+
                     if square_bb & self.player_occupied != 0:
                         friendly_piece_count += 1
+                        # found a friendly piece between king and attacker, saving as possible pin
+                        possible_pin_square = square_bb
 
+                    # attackers are not counted when checking for pieces between king - attacker
                     if square_bb & self.opponent_occupied & ~attackers != 0:
                         opponent_piece_count += 1
 
@@ -273,17 +281,15 @@ class MoveGenerator:
                             self.in_double_check = self.in_check # if we were already in check, now we are in double check
                             self.in_check = True
 
-                        # one friendly piece found between king and attacker -> the friendly piece is pinned
+                        # one friendly piece found between king and attacker -> the friendly piece found previously is pinned
                         elif friendly_piece_count == 1 and opponent_piece_count == 0:
-                            self.pin_squares |= square_bb
+                            self.pin_squares |= possible_pin_square
+                            self.pin_ray_map[possible_pin_square] = pin_ray
 
-                        # exit loop as soon as first attacker is found
+                        # exit loop as soon as attacker is found when walking from friendly king
                         break
 
-                    # exit loops, as only the king can move in a double check
-                    if self.in_double_check:
-                        break
-
+            # exit loop, as only the king can move in a double check
             if self.in_double_check:
                 break
 
