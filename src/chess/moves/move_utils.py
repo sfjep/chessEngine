@@ -131,6 +131,18 @@ def pawn_two_step(bb, color):
         return move_2_up(bb)
     else:
         return move_2_down(bb)
+    
+
+MOVE_FUNCTION = {
+    "UP_RIGHT": move_up_right,
+    "RIGHT": move_right,
+    "DOWN_RIGHT": move_down_right,
+    "DOWN": move_down,
+    "DOWN_LEFT": move_down_left,
+    "LEFT": move_left,
+    "UP_LEFT": move_up_left,
+    "UP": move_up,
+}
 
 SQUARE_XRAYS = {
     square: {
@@ -145,3 +157,4 @@ SQUARE_XRAYS = {
     }
     for square in chess.SQUARES
 }
+

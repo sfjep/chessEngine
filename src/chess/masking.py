@@ -74,9 +74,9 @@ def mask_opponent_pieces_downward_range(range_bb: chess.Bitboard, opponent_piece
     """
     Input:
         A range BB (vertical, horizontal or diagonal) from the current position DOWNWARDS or LEFTWARD
-        and the BB of squares occupied by current player.
+        and the BB of squares occupied by opponent.
     Output:
-        BB of squares on that range that the acting player CANNOT move to given its own pieces.
+        BB of squares on that range that the acting player CANNOT move to given its opponents pieces.
         Note: This function works ONLY for movements from a square i (curreny position) to a square j,
         where i > j, for i,j in [0..63].
     """
