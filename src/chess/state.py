@@ -24,15 +24,17 @@ class State:
     en_passant_capture_square: chess.Bitboard  # Destination square of attacking piece
     halfmove_count: int
     move_count: int
-    opponent_moves: List[Action]
+    move_generator: MoveGenerator
+    in_check: bool
 
     def __init__(self, fen=None) -> None:
         if fen:
             self.get_state_from_fen(fen)
         else:
             self.get_state_from_fen(chess.STARTING_BOARD_FEN)
-        self.opponent_moves = []
-        self.is_in_check()
+
+        self.move_generator = MoveGenerator(self, self.turn)
+        self.in_check = self.move_generator.in_check
 
     def get_state_from_fen(self, fen_str: str):
         fen = FenUtils(fen_str)
@@ -46,28 +48,8 @@ class State:
         self.halfmove_count = fen.get_halfmove_count()
         self.move_count = fen.get_move_count()
 
-    def is_in_check(self):
-        if self.opponent_moves:
-            if any([move.is_check for move in self.opponent_moves]):
-                self.in_check[self.turn] = True
-            else:
-                self.in_check[self.turn] = False
-        else:
-            self.in_check = [False, False]
-            self.opponent_moves = self.get_all_moves(not(self.turn))
-            self.is_in_check()
-
-    def is_checkmate(self):
-        # TODO
-        self.in_checkmate = [False, False]
 
     def get_legal_moves(self, color=None):
-        if not color:
-            color = self.turn
-        all_moves = self.get_all_moves(color)
-        return self.filter_suicides(all_moves)
-
-    def get_all_moves(self, color):
         """
         Generate list of actions possible in state
             Check which color is playing
@@ -75,18 +57,8 @@ class State:
             Take index of piece and get moves lookup
             Convert possible moves to list of Actions
         """
-        move_gen = MoveGenerator(self, color)
-        return move_gen.get_piece_moves()
-
-    def filter_suicides(self, all_moves):
-        legal_moves = []
-        for move in all_moves:
-            if str(move) == "e8d7":
-                pass
-            search_state = deepcopy(self)
-            if not search_state.is_suicide(move):
-                legal_moves.append(move)
-        return legal_moves
+        # pseudo-legal moves already filtered out in move generation
+        return self.move_generator.get_piece_moves()
 
 
     def choose_action(self):
@@ -117,15 +89,9 @@ class State:
         intermediate_time = time.time()
 
         self.fen = Fen.get_fen_from_state(self)
-        self.opponent_moves = []
 
         logging.debug(f"Getting fen took {time.time() - intermediate_time:.5f} seconds.")
         intermediate_time = time.time()
-
-
-    def is_suicide(self, action):
-        self.board.apply_action(action)
-        return self.is_in_check()
 
     def update_castling_rights(self, action):
         if action.piece.type == chess.KING:

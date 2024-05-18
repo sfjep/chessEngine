@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 import string
 import chess
 from chess import utils
@@ -7,27 +6,27 @@ from chess.masking import mask_own_pieces, mask_opponent_pieces
 from chess.moves.move_utils import pawn_diag_moves, pawn_starting_rank, pawn_one_step, pawn_two_step, SQUARE_XRAYS, MOVE_FUNCTION
 from chess.utils import get_individual_ones_in_bb, get_square_int_from_bb
 
-@dataclass
+# @dataclass
 class MoveGenerator:
-    player_board: dict
-    player_occupied: chess.Bitboard
-    opponent_occupied: chess.Bitboard
-    player_king: chess.Bitboard
-    opponent_king: chess.Bitboard
-    moves: list
+    # player_board: dict
+    # player_occupied: chess.Bitboard
+    # opponent_occupied: chess.Bitboard
+    # player_king: chess.Bitboard
+    # opponent_king: chess.Bitboard
+    # moves: list
 
-    in_check: bool
-    in_double_check: bool
-    pin_squares: chess.Bitboard
-    opponent_attack_map: chess.Bitboard
+    # in_check: bool
+    # in_double_check: bool
+    # pin_squares: chess.Bitboard
+    # attacked_squares: chess.Bitboard
 
     def __init__(self, state, color):
         self.state = state
         self.color = color
         self.player_board = state.board.pieces[color]
         self.opponent_board = state.board.pieces[not(color)]
-        self.player_occupied = self.player_board['PLAYER_OCCUPIED']
-        self.opponent_occupied = self.player_board['OPPONENT_OCCUPIED']
+        self.player_occupied = self.player_board["PLAYER_OCCUPIED"]
+        self.opponent_occupied = self.player_board["OPPONENT_OCCUPIED"]
         self.opponent_king = state.board.pieces[not(color)]["KING"].bb
         self.player_king = state.board.pieces[color]["KING"].bb
         
@@ -52,7 +51,7 @@ class MoveGenerator:
         self._get_bishop_moves()
         self._get_king_moves()
         return self.moves
-
+    
     def _get_pawn_moves(self):
         pawns = self.player_board["PAWN"]
 
@@ -136,14 +135,14 @@ class MoveGenerator:
             self.moves += Action.generate_actions(destination_squares, king, square_int, ActionType.MOVE)
             self.moves += Action.generate_actions(king_attack_squares, king, square_int, ActionType.ATTACK)
 
-            if not(self.state.in_check[self.color]):
+            if not(self.in_check):
                 self.moves += Action.generate_actions(queenside_castles_bb, king, square_int, ActionType.CASTLING, is_long_castles=True)
                 self.moves += Action.generate_actions(kingside_castles_bb, king, square_int, ActionType.CASTLING, is_long_castles=False)
 
 
     def _add_castling(self):
         # Cannot castle when in check
-        if not self.state.in_check[self.color]:
+        if not self.in_check:
             kingside_castles_bb = chess.BB_EMPTY
             queenside_castles_bb = chess.BB_EMPTY
             if self.state.can_castle_queenside[self.color] and self._queenside_castling_squares_empty():
@@ -228,8 +227,8 @@ class MoveGenerator:
         self.compute_slider_attacks()
 
         # check for pinned pieces, walking in every direction from friendly king
-        opponent_diag_sliders = self.opponent_board["QUEEN"] | self.opponent_board["BISHOP"]
-        opponent_ortho_sliders = self.opponent_board["QUEEN"] | self.opponent_board["ROOK"]
+        opponent_diag_sliders = self.opponent_board["QUEEN"].bb | self.opponent_board["BISHOP"].bb
+        opponent_ortho_sliders = self.opponent_board["QUEEN"].bb | self.opponent_board["ROOK"].bb
 
         directions = ["RIGHT", "UP", "DOWN", "LEFT", "UP_RIGHT", "UP_LEFT", "DOWN_RIGHT", "DOWN_LEFT"]
 

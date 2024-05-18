@@ -192,7 +192,7 @@ class GUI:
 		fen_str = font_text.render('FEN: ' + state.fen, True, p.Color('white'))
 		halfmove_count = font_text.render('Halfmove count: ' + str(state.halfmove_count), True, p.Color('white'))
 		move_count = font_text.render('Move count: ' + str(state.move_count), True, p.Color('white'))
-		is_check = font_text.render(f'In check: ' + str(state.in_check[state.turn]), True, p.Color('white'))
+		is_check = font_text.render(f'In check: ' + str(state.in_check), True, p.Color('white'))
 		numberOfPlayerMoves = font_text.render(f'#: {len(state.get_legal_moves())}', True, p.Color('white'))
 
 		self.full_screen.blit(header, (50, 50))
@@ -210,10 +210,10 @@ class GUI:
 			actions_surface = font_text.render('Possible actions: ' + actions_string, True, p.Color('white'))
 			self.full_screen.blit(actions_surface, (50, 350))
 
-		if state.opponent_moves:
-			actions_string = ", ".join(str(move) for move in state.opponent_moves)
-			actions_surface = font_text.render('Opponent moves: ' + actions_string, True, p.Color('white'))
-			self.full_screen.blit(actions_surface, (50, 600))
+		# if state.opponent_moves:
+		# 	actions_string = ", ".join(str(move) for move in state.opponent_moves)
+		# 	actions_surface = font_text.render('Opponent moves: ' + actions_string, True, p.Color('white'))
+		# 	self.full_screen.blit(actions_surface, (50, 600))
 
         # Redraw the chess screen on the right side
 		self.full_screen.blit(self.chess_screen, (self.FULL_WIDTH - self.WIDTH, self.FULL_HEIGHT))
