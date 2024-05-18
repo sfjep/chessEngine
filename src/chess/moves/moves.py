@@ -52,18 +52,24 @@ class MoveGenerator:
         self._get_king_moves()
         return self.moves
     
+    def is_pinned(self, piece_bb):
+        return piece_bb & self.pin_squares != 0
+    
     def _get_pawn_moves(self):
         pawns = self.player_board["PAWN"]
 
-        for current_piece_position in get_individual_ones_in_bb(pawns.bb):
-            current_piece_index = get_square_int_from_bb(current_piece_position)
-            attack_squares = pawn_diag_moves(current_piece_position, self.color) & (self.opponent_occupied)
-            en_passant_dest_squares = pawn_diag_moves(current_piece_position, self.color) & (self.state.en_passant_capture_square)
+        for single_pawn_bb in get_individual_ones_in_bb(pawns.bb):
+            if self.is_pinned(single_pawn_bb):
+                continue
+
+            current_piece_index = get_square_int_from_bb(single_pawn_bb)
+            attack_squares = pawn_diag_moves(single_pawn_bb, self.color) & (self.opponent_occupied)
+            en_passant_dest_squares = pawn_diag_moves(single_pawn_bb, self.color) & (self.state.en_passant_capture_square)
             destination_squares = chess.BB_EMPTY
-            if move_up := pawn_one_step(current_piece_position, self.color) & ~(self.player_occupied | self.opponent_occupied):
+            if move_up := pawn_one_step(single_pawn_bb, self.color) & ~(self.player_occupied | self.opponent_occupied):
                 destination_squares |= move_up
-                if current_piece_position & pawn_starting_rank(self.color):
-                    if move_2_up := pawn_two_step(current_piece_position, self.color) & ~(self.opponent_occupied | self.player_occupied):
+                if single_pawn_bb & pawn_starting_rank(self.color):
+                    if move_2_up := pawn_two_step(single_pawn_bb, self.color) & ~(self.opponent_occupied | self.player_occupied):
                         destination_squares |= move_2_up
 
             promotion_rank = chess.BB_PROMOTION_RANK[self.color]
@@ -94,6 +100,9 @@ class MoveGenerator:
         knights = self.player_board["KNIGHT"]
 
         for piece_bb in get_individual_ones_in_bb(knights.bb):
+            if self.is_pinned(piece_bb):
+                continue
+
             square_int = get_square_int_from_bb(piece_bb)
             destination_squares = knights.moves_lookup[square_int] & ~self.player_occupied & ~self.opponent_occupied
             attack_moves = knights.moves_lookup[square_int] & ~self.player_occupied & self.opponent_occupied
@@ -165,29 +174,32 @@ class MoveGenerator:
         opponent_pieces = self.opponent_occupied if not opponent_attacks else self.player_occupied
 
         for piece_bb in get_individual_ones_in_bb(piece.bb):
-            piece_pos_int = get_square_int_from_bb(piece_bb)
-            destination_squares = piece.moves_lookup[piece_pos_int]
+            if not opponent_attacks and self.is_pinned(piece_bb):
+                continue
+
+            piece_square = get_square_int_from_bb(piece_bb)
+            destination_squares = piece.moves_lookup[piece_square]
 
             for direction, mask_upwards in directions:
 
                 if not opponent_attacks:
-                    destination_squares &= ~mask_own_pieces(piece_pos_int, direction, moving_pieces, mask_upwards)
-                    destination_squares &= ~mask_opponent_pieces(piece_pos_int, direction, opponent_pieces, mask_upwards)
+                    destination_squares &= ~mask_own_pieces(piece_square, direction, moving_pieces, mask_upwards)
+                    destination_squares &= ~mask_opponent_pieces(piece_square, direction, opponent_pieces, mask_upwards)
                 
                 # when computing sliding attacks, the sliding piece should be considered allowed to get to a space occupied by pieces of its color
                 # e.g. assume friendly king eats opponent piece, and this square is attacked by sliding piece,
                 # then the king shouldn't be allowed to move there (square should be part of attacked_squares)
                 # therefore we mask both friendly and opponent pieces as opponent pieces (such that the slider can reach the square in both cases)
                 else:
-                    destination_squares &= ~mask_opponent_pieces(piece_pos_int, direction, moving_pieces, mask_upwards)
-                    destination_squares &= ~mask_opponent_pieces(piece_pos_int, direction, opponent_pieces, mask_upwards)
+                    destination_squares &= ~mask_opponent_pieces(piece_square, direction, moving_pieces, mask_upwards)
+                    destination_squares &= ~mask_opponent_pieces(piece_square, direction, opponent_pieces, mask_upwards)
 
 
             # only append to move list if we are computing moves for friendly pieces
             if not opponent_attacks:
-                self.moves += Action.generate_actions(destination_squares & ~self.opponent_occupied, piece, piece_pos_int, ActionType.MOVE)
-                self.moves += Action.generate_actions(destination_squares & self.opponent_occupied & ~self.opponent_king, piece, piece_pos_int, ActionType.ATTACK)
-                self.moves += Action.generate_actions(destination_squares & self.opponent_occupied & self.opponent_king, piece, piece_pos_int, ActionType.ATTACK, is_check=True)
+                self.moves += Action.generate_actions(destination_squares & ~self.opponent_occupied, piece, piece_square, ActionType.MOVE)
+                self.moves += Action.generate_actions(destination_squares & self.opponent_occupied & ~self.opponent_king, piece, piece_square, ActionType.ATTACK)
+                self.moves += Action.generate_actions(destination_squares & self.opponent_occupied & self.opponent_king, piece, piece_square, ActionType.ATTACK, is_check=True)
 
             # otherwise append destination squares to attacked_squares
             else:
